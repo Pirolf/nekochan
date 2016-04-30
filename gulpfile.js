@@ -8,13 +8,21 @@ const jasmineBrowser = require('gulp-jasmine-browser');
 const runSequence = require('run-sequence');
 const webpack = require('webpack-stream');
 const webpackConfig = require('./config/webpack.config');
-const tools = require('pui-react-tools');
 
-const Lint = tools.Lint;
-Lint.install();
+require('pui-react-tools').Lint.install();
+
+gulp.task('build', ['clean'], (done) => {
+    build();
+    done();
+});
+
+function sourceFiles() {
+    const src = ['assets/javascripts/*', 'assets/styles/*', 'config/*.js', 'server/*.js'];
+    return process.env.NODE_ENV == 'production' ? src : src.concat(['spec/*/*.js']);
+}
 
 function build() {
-    return gulp.src(['assets/javascripts/*', 'assets/styles/*', 'config/*.js', 'server/*.js', 'spec/*/*.js'])
+    return gulp.src(sourceFiles())
     .pipe(webpack(webpackConfig))
     .pipe(gulp.dest('dist/'));
 }
