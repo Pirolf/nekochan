@@ -4,6 +4,7 @@
   "description": "nekos",
   "main": "index.js",
   "scripts": {
+    "start": "node server-build/bundle.js",
     "test": "gulp spec"
   },
   "repository": {
@@ -23,7 +24,7 @@
   "homepage": "https://github.com/Pirolf/nekochan#readme",
   "dependencies": {
     "express": "^4.13.4",
-    "socket.io": "1.4.5"
+    "socket.io": "^1.4.5"
   },
   "devDependencies": {
     "babel-core": "^6.7.7",

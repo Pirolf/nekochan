@@ -1,4 +1,5 @@
-dist/*
+public/*
+server-build/*
 # Logs
 logs
 *.log
