@@ -8,24 +8,10 @@ const jasmineBrowser = require('gulp-jasmine-browser');
 const runSequence = require('run-sequence');
 const webpack = require('webpack-stream');
 
-const clientWebpackConfig = require('./config/webpack.client.config').config;
-const serverWebpackConfig = require('./config/webpack.server.config').config;
+const clientWebpackConfig = require('./config/webpack.client.config');
+const serverWebpackConfig = require('./config/webpack.server.config');
 
 require('pui-react-tools').Lint.install();
-
-const fs = require('fs');
-function nodeModules(){
-    const modules = {};
-    fs.readdirSync('node_modules')
-        .filter((x) => {
-            return ['.bin'].indexOf(x) === -1;
-        })
-        .forEach((mod) => {
-            modules[mod] = 'commonjs ' + mod;    
-        });
-    return modules;
-}
-const modules = nodeModules();
 
 gulp.task('buildClient', (done) => {
     buildClient();
@@ -43,18 +29,18 @@ gulp.task('build', ['clean', 'buildClient', 'buildServer'], (done) => {
 
 function buildSpecs() {
     return gulp.src(['spec/*/*.js'])
-    .pipe(webpack(clientWebpackConfig(modules)));
+    .pipe(webpack(clientWebpackConfig));
 }
 
 function buildClient() {
     return gulp.src(['assets/javascripts/*', 'assets/styles/*'])
-    .pipe(webpack(clientWebpackConfig(modules)))
-    .pipe(gulp.dest('public/'));
+    .pipe(webpack(clientWebpackConfig))
+    .pipe(gulp.dest('public'));
 }
 
 function buildServer() {
     return gulp.src(['server/*'])
-    .pipe(webpack(serverWebpackConfig(modules)))
+    .pipe(webpack(serverWebpackConfig))
     .pipe(gulp.dest('server-build'));
 }
 
