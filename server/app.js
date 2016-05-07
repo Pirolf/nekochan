@@ -10,21 +10,26 @@ app.get('/', (req, res) => {
   	res.sendFile(path.join(rootPath, '/views/index.html'));
 });
 
+let userIds = [];
 io.on('connection', (socket) => {
 	/*eslint-disable no-console */
 	console.log('a user connected');
-	/*eslint-enable no-console */
-	socket.on('disconnect', () => {
-		/*eslint-disable no-console */
-		console.log('a user disconnected');
-		/*eslint-enable no-console */
+	userIds.push(userIds.length);
+	const room = userIds.length % 2 === 1? 'room-0' : 'room-1';
+
+	socket.join(room, () => {
+		console.log(`joined ${room}`);	
 	});
 
 	socket.on('cat', (msg) => {
-		/*eslint-disable no-console */
+		io.to(room).emit('cat', `biuuuu ${room}`);
     	console.log('cat ' + msg);
-		/*eslint-enable no-console */
   	});
+
+	socket.on('disconnect', () => {
+		console.log('a user disconnected');
+	});
+	/*eslint-enable no-console */
 });
 
 app.use(express.static('public'));
