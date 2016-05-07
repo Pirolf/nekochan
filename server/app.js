@@ -19,6 +19,12 @@ io.on('connection', (socket) => {
 		console.log('a user disconnected');
 		/*eslint-enable no-console */
 	});
+
+	socket.on('cat', (msg) => {
+		/*eslint-disable no-console */
+    	console.log('cat ' + msg);
+		/*eslint-enable no-console */
+  	});
 });
 
 app.use(express.static('public'));
