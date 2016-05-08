@@ -1,5 +1,7 @@
 public/*
 server-build/*
+config/config.js
+.env
 # Logs
 logs
 *.log
