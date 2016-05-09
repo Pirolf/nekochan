@@ -1,17 +1,23 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const client = require('./client');
+const Api = require('./api');
 
 class Application extends React.Component {
-	click = () => {
+	meow = () => {
 		client.meow();
+	};
+
+	newGame = () => {
+		Api.createGame();
 	};
 
 	render() {
 		return (
-			<div className="app biu">
+			<div className="app">
 				<div>miao</div>
-				<input type="submit" value="click me" onClick={this.click}/>
+				<button onClick={this.newGame}>New Game</button>
+				<input type="submit" value="click me" onClick={this.meow}/>
 			</div>
 		);
 	}

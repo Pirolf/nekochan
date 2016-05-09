@@ -25,17 +25,14 @@ module.exports = (passport) => {
         process.nextTick(() => {
             User.findOne({ 'facebook.id' : profile.id }, (err, user) => {
                 if (err) return done(err);
-
                 if (user) return done(null, user);
 
-                const {id, name: {givenName, familyName}, emails} = profile;
-                const name = `${givenName} ${familyName}`;
-                
+                const {id, displayName, emails} = profile;
                 const newUser = new User();
-
+                
                 newUser.facebook.id = id;                   
                 newUser.facebook.token = token;
-                newUser.facebook.name = name;
+                newUser.facebook.name = displayName;
                 newUser.facebook.email = emails[0].value;
 
                 newUser.save((err) => {

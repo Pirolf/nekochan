@@ -5,6 +5,7 @@ const io = require('socket.io')(http);
 const path = require('path');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const bodyParser = require('body-parser');
 const session = require('express-session');
 const config = require('../config/config');
 const {env, rootPath} = require('./helper');
@@ -12,7 +13,15 @@ const {env, rootPath} = require('./helper');
 require('./auth')(passport);
 
 mongoose.connect(config.db.url);
-app.get('/', (req, res) => {
+
+app.use(express.static('public'));
+
+app.use(bodyParser());
+app.use(session({ secret: env.get('SESSION_SECRET') }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/', isLoggedIn, (req, res) => {
   	res.sendFile(path.join(rootPath, '/views/index.html'));
 });
 
@@ -41,18 +50,13 @@ io.on('connection', (socket) => {
 	});
 });
 
-app.use(express.static('public'));
-
-app.use(session({ secret: env.get('SESSION_SECRET') }));
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
-    successRedirect : '/nekos',
-    failureRedirect : '/'
-}));
+    failureRedirect : '/sign-in'
+}), (req, res) => {
+	res.redirect('/');
+});
 
 app.get('/nekos', isLoggedIn, (req, res) => {
     res.sendFile(path.join(rootPath, '/views/auth_test.html'));
@@ -60,12 +64,17 @@ app.get('/nekos', isLoggedIn, (req, res) => {
 
 app.get('/logout', (req, res) => {
     req.logout();
-    res.redirect('/');
+    res.redirect('/sign-in');
+});
+
+app.post('/create-game', isLoggedIn, (req, res) => {
+	console.log('server: create-game');
+	res.json({'gameId': 123});
 });
 
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) return next();
-    res.redirect('/');
+    res.redirect('/sign-in');
 }
 
 http.listen(3000, () => {
