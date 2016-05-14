@@ -17,16 +17,18 @@ mongoose.connect(config.db.url);
 app.use(express.static('public'));
 
 app.use(bodyParser());
-app.use(session({ secret: env.get('SESSION_SECRET') }));
+app.use(session({ name: 'neko-auth', secret: env.get('SESSION_SECRET') }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+const viewPath = path.join(rootPath, "views");
+
 app.get('/', isLoggedIn, (req, res) => {
-  	res.sendFile(path.join(rootPath, '/views/index.html'));
+  	res.sendFile(path.join(viewPath, 'index.html'));
 });
 
 app.get('/sign-in', (req, res) => {
-	res.sendFile(path.join(rootPath, '/views/sign-in.html'));
+	res.sendFile(path.join(viewPath, 'sign-in.html'));
 });
 
 let userIds = [];
@@ -55,7 +57,7 @@ app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' })
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
     failureRedirect : '/sign-in'
 }), (req, res) => {
-	res.redirect('/');
+	res.redirect('back');
 });
 
 app.get('/nekos', isLoggedIn, (req, res) => {
@@ -67,9 +69,21 @@ app.get('/logout', (req, res) => {
     res.redirect('/sign-in');
 });
 
+app.get('/game/:uuid', (req, res) => {
+	res.sendFile(path.join(viewPath, 'index.html'));
+});
+
 app.post('/create-game', isLoggedIn, (req, res) => {
-	console.log('server: create-game');
-	res.json({'gameId': 123});
+	const Game = require('./game');
+	const uuid = require('uuid');
+	let game = new Game();
+	game.users.push(req.user.facebook.id);
+	game.uuid = uuid.v1();
+    game.save((err) => {
+        if (err) throw err;
+    	console.log(`Create game: ${game.id}`);
+		res.redirect(`/game/${game.uuid}`);
+    });
 });
 
 function isLoggedIn(req, res, next) {

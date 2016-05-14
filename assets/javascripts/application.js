@@ -17,7 +17,7 @@ class Application extends React.Component {
 			<div className="app">
 				<div>miao</div>
 				<button onClick={this.newGame}>New Game</button>
-				<input type="submit" value="click me" onClick={this.meow}/>
+				<input type="submit" value="test meow" onClick={this.meow}/>
 			</div>
 		);
 	}

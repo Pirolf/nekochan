@@ -1,0 +1,1 @@
+mongod --dbpath=/mongo/db --port 27017
