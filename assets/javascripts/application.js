@@ -2,9 +2,16 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const client = require('./client');
 const Api = require('./api');
+const {Actions} = require('p-flux');
+const useStore = require('p-flux').useStore;
+const store = require('./store');
 const getRoute = require('./helpers/route_helper');
 
 class Application extends React.Component {
+	static propTypes = {
+    	store: React.PropTypes.object.isRequired
+  	};
+
 	meow = () => {
 		client.meow();
 	};
@@ -14,11 +21,13 @@ class Application extends React.Component {
 	};
 
 	async componentDidMount() {
+		const user = await Api.getUser();
+		Actions.updateUser(user);
+		
 		const {routeName, pathParams} = getRoute();
 		if (routeName === 'game') {
-			const uuid = pathParams[1];
-			const game = await Api.getGame({uuid});
-			console.log(game);
+			const game = await Api.getGame({uuid: pathParams[1]});
+			Actions.updateGame(game);
 		}
 	}
 
@@ -32,6 +41,11 @@ class Application extends React.Component {
 		);
 	}
 }
+const ApplicationWithStore = useStore(Application, {
+	store, 
+	dispatcherHandlers: [require('./dispatcher')]
+});
 
-ReactDOM.render(<Application />, document.getElementById('root'));
-module.exports = Application;
+ReactDOM.render(<ApplicationWithStore />, document.getElementById('root'));
+
+module.exports = ApplicationWithStore;

@@ -70,6 +70,15 @@ app.get('/logout', (req, res) => {
     res.redirect('/sign-in');
 });
 
+app.get('/current-user', (req, res) => {
+	if (!req.isAuthenticated) {
+		res.sendStatus(401);
+		return;
+	}
+	const {facebook: {name, id}} = req.user;
+	res.send({name, id});
+});
+
 app.get('/game/:uuid', isLoggedIn, (req, res) => {
 	const Game = require('./game');
 	Game.findOne({uuid: req.params.uuid}, (err, game) => {
