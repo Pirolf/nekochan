@@ -9,7 +9,8 @@ module.exports = {
             loader: 'babel',
             exclude: /node_modules/,
             query: {
-                presets: ['es2015', 'react', 'stage-0', 'stage-1']
+                presets: ['es2015', 'react', 'stage-0', 'stage-1', 'stage-2', 'stage-3'],
+                plugins: ['transform-runtime', 'syntax-async-functions']
             }
         }, 
         { test: /\.json$/, loader: 'json-loader' },

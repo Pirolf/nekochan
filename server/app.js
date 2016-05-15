@@ -14,7 +14,8 @@ require('./auth')(passport);
 
 mongoose.connect(config.db.url);
 
-app.use(express.static('public'));
+app.use(express.static(path.join(rootPath, 'public')));
+app.use('/game', express.static(path.join(rootPath, 'public')));
 
 app.use(bodyParser());
 app.use(session({ name: 'neko-auth', secret: env.get('SESSION_SECRET') }));
@@ -69,9 +70,18 @@ app.get('/logout', (req, res) => {
     res.redirect('/sign-in');
 });
 
-app.get('/game/:uuid', (req, res) => {
+app.get('/game/:uuid', isLoggedIn, (req, res) => {
+	console.log(req.params)
 	res.sendFile(path.join(viewPath, 'index.html'));
 });
+
+app.get('/get-game/:uuid', isLoggedIn, (req, res) => {
+	const Game = require('./game');
+	Game.findOne({ 'uuid' : req.params.uuid }, (err, game) => {
+		if (err) res.sendStatus(422);
+		res.send(game);
+	});
+})
 
 app.post('/create-game', isLoggedIn, (req, res) => {
 	const Game = require('./game');
@@ -81,7 +91,7 @@ app.post('/create-game', isLoggedIn, (req, res) => {
 	game.uuid = uuid.v1();
     game.save((err) => {
         if (err) throw err;
-    	console.log(`Create game: ${game.id}`);
+    	console.log(`Create game: ${game.uuid}`);
 		res.redirect(`/game/${game.uuid}`);
     });
 });
