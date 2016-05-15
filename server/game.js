@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const gameSchema = mongoose.Schema({
-    users: [], //users' fb ids
+    users: [String], //users' fb ids
     uuid: String,
     updated: { type: Date, default: Date.now }
 });

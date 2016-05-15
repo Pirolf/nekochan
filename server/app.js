@@ -58,7 +58,7 @@ app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' })
 app.get('/auth/facebook/callback', passport.authenticate('facebook', {
     failureRedirect : '/sign-in'
 }), (req, res) => {
-	res.redirect('back');
+	res.redirect('/');
 });
 
 app.get('/nekos', isLoggedIn, (req, res) => {
@@ -71,8 +71,21 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/game/:uuid', isLoggedIn, (req, res) => {
-	console.log(req.params)
-	res.sendFile(path.join(viewPath, 'index.html'));
+	const Game = require('./game');
+	Game.findOne({uuid: req.params.uuid}, (err, game) => {
+		const userId = req.user.facebook.id;
+		console.log(game.users)
+		const includes = require('lodash.includes');
+		if (!includes(game.users, userId)) {
+			game.users.push(userId);
+			game.save((err) => {
+				if (err) throw err;
+				res.sendFile(path.join(viewPath, 'index.html'));
+				return;
+			});
+		}
+		res.sendFile(path.join(viewPath, 'index.html'));
+	});
 });
 
 app.get('/get-game/:uuid', isLoggedIn, (req, res) => {
