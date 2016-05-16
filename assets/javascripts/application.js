@@ -1,6 +1,6 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
-const client = require('./client');
+const Game = require('./game');
 const Api = require('./api');
 const {Actions} = require('p-flux');
 const useStore = require('p-flux').useStore;
@@ -12,10 +12,6 @@ class Application extends React.Component {
     	store: React.PropTypes.object.isRequired
   	};
 
-	meow = () => {
-		client.meow();
-	};
-
 	newGame = async () => {
 		await Api.createGame();
 	};
@@ -23,7 +19,7 @@ class Application extends React.Component {
 	async componentDidMount() {
 		const user = await Api.getUser();
 		Actions.updateUser(user);
-		
+
 		const {routeName, pathParams} = getRoute();
 		if (routeName === 'game') {
 			const game = await Api.getGame({uuid: pathParams[1]});
@@ -32,11 +28,12 @@ class Application extends React.Component {
 	}
 
 	render() {
+		const {store: {user, game}} = this.props;
 		return (
 			<div className="app">
 				<div>miao</div>
 				<button onClick={this.newGame}>New Game</button>
-				<input type="submit" value="test meow" onClick={this.meow}/>
+				{user && game && <Game {...{user, game}}/>} 
 			</div>
 		);
 	}
