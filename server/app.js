@@ -37,7 +37,10 @@ io.on('connection', (socket) => {
 	console.log('a user connected');
 	socket.on('authenticate', ({user: {name}, gameUUID}) => {
 		socket.join(gameUUID, () => {
-			io.to(gameUUID).emit('joinGame', `${name} joined the game`);
+			io.to(gameUUID).emit('joinGame', {
+				message: `${name} joined the game`, 
+				timestamp: Date.now()
+			});
 		});
 	})
 	

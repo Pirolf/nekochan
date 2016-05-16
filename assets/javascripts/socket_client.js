@@ -1,10 +1,12 @@
+const {Actions} = require('p-flux');
+
 let socket;
 const Client = {
 	connect: () => {
 		const io = require('socket.io-client/socket.io.js');
 		socket = io();
-		socket.on('joinGame', (msg) => {
-			console.log(msg);
+		socket.on('joinGame', (data) => {
+			Actions.updateActivityLogs(data);
 		});
 	},
 
