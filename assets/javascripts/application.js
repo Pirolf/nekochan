@@ -31,7 +31,6 @@ class Application extends React.Component {
 		const {store: {user, game}} = this.props;
 		return (
 			<div className="app">
-				<div>miao</div>
 				<button onClick={this.newGame}>New Game</button>
 				{user && game && <Game {...{user, game}}/>} 
 			</div>

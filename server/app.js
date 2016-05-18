@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
+require('./socket_server')(http);
+
 const path = require('path');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -16,7 +17,6 @@ mongoose.connect(config.db.url);
 
 app.use(express.static(path.join(rootPath, 'public')));
 app.use('/game', express.static(path.join(rootPath, 'public')));
-
 app.use(bodyParser());
 app.use(session({ name: 'neko-auth', secret: env.get('SESSION_SECRET') }));
 app.use(passport.initialize());
@@ -30,23 +30,6 @@ app.get('/', isLoggedIn, (req, res) => {
 
 app.get('/sign-in', (req, res) => {
 	res.sendFile(path.join(viewPath, 'sign-in.html'));
-});
-
-/*eslint-disable no-console */
-io.on('connection', (socket) => {
-	console.log('a user connected');
-	socket.on('authenticate', ({user: {name}, gameUUID}) => {
-		socket.join(gameUUID, () => {
-			io.to(gameUUID).emit('joinGame', {
-				message: `${name} joined the game`, 
-				timestamp: Date.now()
-			});
-		});
-	})
-	
-	socket.on('disconnect', () => {
-		console.log('a user disconnected');
-	});
 });
 
 app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
@@ -75,6 +58,7 @@ app.get('/current-user', (req, res) => {
 	res.send({name, id});
 });
 
+/*eslint-disable no-console */
 app.get('/game/:uuid', isLoggedIn, (req, res) => {
 	const Game = require('./game');
 	Game.findOne({uuid: req.params.uuid}, (err, game) => {

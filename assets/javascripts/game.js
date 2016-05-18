@@ -15,7 +15,11 @@ class Game extends React.Component {
 	}
 
 	render() {
-		return <div>Game Area</div>;
+		return (
+			<div className="game">
+				Game Area
+			</div>
+		);
 	}
 }
 
