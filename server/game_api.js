@@ -1,4 +1,5 @@
-let gameState = "stopped";
+const Game = require('./game');
+let gameStates = {};
 
 function update() {
 	const date = new Date(Date.now())
@@ -13,15 +14,30 @@ async function run() {
 }
 
 const GameApi = {
-	start: async () => {
-		gameState = "running";
-		while (gameState === "running") {
-			await run();
-		}
+	start: async (gameUUID) => {
+		Game.findOne({uuid: gameUUID}, async (err, game) => {
+			if (err) {
+				console.log(err);
+				return;
+			}
+			
+			gameStates[gameUUID] = true;
+			while (gameStates[gameUUID]) {
+				await run();
+			}
+		});
 	},
 
-	stop: () => {
-		gameState = "stopped";
+	stop: (gameUUID) => {
+		Game.findOne({uuid: gameUUID}, (err, game) => {
+			if (err) {
+				console.log(err);
+				return;
+			}
+			
+			delete gameStates[gameUUID];
+			console.log("game stopped")
+		});
 	}
 };
 
