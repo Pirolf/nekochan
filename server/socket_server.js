@@ -1,4 +1,4 @@
-const GameApi = require('./game_api');
+const GameLoop = require('./game_loop');
 let rooms = {};
 
 module.exports = function(http) {
@@ -18,7 +18,11 @@ module.exports = function(http) {
 
 				console.log("playerCount: ", playerCount)
 				if (playerCount === 1) {
-					GameApi.start(gameUUID);
+					GameLoop.start(gameUUID, socket.id, (updatedGame) => {
+						io.to(gameUUID).emit('gameUpdate', {
+							game: updatedGame
+						});						
+					});
 				}
 			});
 		});
@@ -33,7 +37,7 @@ module.exports = function(http) {
 
 			if (!playerCount) {
 				console.log("stopping");
-				GameApi.stop(gameUUID);
+				GameLoop.stop(gameUUID, socket.id);
 			}
 			console.log('a user disconnected');
 		});

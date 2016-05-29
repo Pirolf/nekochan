@@ -1,44 +1,21 @@
-const Game = require('./game');
-let gameStates = {};
+const catProfessions = ['noProfession', 'explorer'];
+function generateCats(game) {
+	const {cats} = game;
+	const totalCats = catProfessions.map(profession => cats[profession].count).reduce((prev, current) => {
+		return prev + current;
+	}, 0);
 
-function update() {
-	const date = new Date(Date.now())
-	console.log(date.toString());
-}
-
-async function run() {
-	return new Promise((resolve, reject) => {
-		update();
-		setTimeout(() => resolve(), 3000);
-	});
+	const salmons = game.resources.salmon;
+	if (salmons / totalCats > 1.5) {
+		const newCats = Math.floor((salmons - totalCats) / 2);
+		game.cats.noProfession.count = cats.noProfession.count + newCats;
+		game.resources.salmon = salmons - newCats * 2;
+	}
+	return game;
 }
 
 const GameApi = {
-	start: async (gameUUID) => {
-		Game.findOne({uuid: gameUUID}, async (err, game) => {
-			if (err) {
-				console.log(err);
-				return;
-			}
-			
-			gameStates[gameUUID] = true;
-			while (gameStates[gameUUID]) {
-				await run();
-			}
-		});
-	},
-
-	stop: (gameUUID) => {
-		Game.findOne({uuid: gameUUID}, (err, game) => {
-			if (err) {
-				console.log(err);
-				return;
-			}
-			
-			delete gameStates[gameUUID];
-			console.log("game stopped")
-		});
-	}
+	generateCats
 };
 
 module.exports = GameApi;

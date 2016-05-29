@@ -8,6 +8,10 @@ const Client = {
 		socket.on('joinGame', (data) => {
 			Actions.updateActivityLogs(data);
 		});
+
+		socket.on('gameUpdate', (data) => {
+			Actions.updateGame(data);
+		});
 	},
 
 	authenticate: ({user, gameUUID}) => {
