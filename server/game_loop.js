@@ -2,25 +2,25 @@ const Game = require('./game');
 const GameApi = require('./game_api');
 let gameStates = {};
 
-async function update(game) {
-	const date = new Date(Date.now())
+async function update(id) {
+	const date = new Date(Date.now());
 	console.log(date.toString());
-	game = GameApi.generateCats(game);
-	return new Promise((resolve, reject) => {
-		game.save((err) => {
-			if (err) {
-				console.log(err);
-				reject(err);
-			}
 
-			resolve(game);
-		});	
-	})
+	return new Promise((resolve, reject) => {
+    Game.findById(id, (err, game) => {
+      game = GameApi.generateCats(game);
+      game.save().then((savedGame) =>{
+        resolve(savedGame);
+      }, (err) => {
+        reject(err);
+      });
+    });
+	});
 }
 
-async function run(game, callback) {
-	return new Promise(async (resolve, reject) => {
-		const updatedGame = await update(game);
+async function run(id, callback) {
+  return new Promise(async (resolve, reject) => {
+		const updatedGame = await update(id);
 		if (callback) callback(updatedGame);
 		setTimeout(() => resolve(updatedGame), 5000);
 	});
@@ -36,13 +36,12 @@ const GameLoop = {
 
 			console.log("game started before", gameStates)
 
-			let updatedGame = game;
 			const key = `${gameUUID}::${socketID}`;
 			gameStates[key] = true;
 			console.log("game started", gameStates)
 
 			while (gameStates[key]) {
-				updatedGame = await run(updatedGame, callback);
+				await run(game._id, callback);
 			}
 			console.log("game really stopped")
 		});
@@ -56,7 +55,7 @@ const GameLoop = {
 			}
 
 			const key = `${gameUUID}::${socketID}`
-			delete gameStates[key];				
+			delete gameStates[key];
 		});
 	}
 };

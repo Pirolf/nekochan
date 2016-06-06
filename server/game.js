@@ -7,9 +7,12 @@ const gameSchema = mongoose.Schema({
     	noProfession: {
     		count: { type: Number, default: 3 }
     	},
-        explorer: {
-            count: Number
-        }
+      explorer: {
+          count: Number
+      },
+      fishercat: {
+        count: Number
+      }
     },
     resources: {
     	salmon: { type: Number, default: 10 }

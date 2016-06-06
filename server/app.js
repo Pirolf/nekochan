@@ -91,12 +91,12 @@ app.post('/create-game', isLoggedIn, (req, res) => {
 	let game = new Game();
 	game.users.push(req.user.facebook.id);
 	game.uuid = uuid.v1();
-	
-    game.save((err) => {
-        if (err) throw err;
-    	console.log(`Create game: ${game.uuid}`);
-		res.redirect(`/game/${game.uuid}`);
-    });
+
+  game.save((err) => {
+    if (err) throw err;
+  	console.log(`Create game: ${game.uuid}`);
+    res.redirect(`/game/${game.uuid}`);
+  });
 });
 
 function isLoggedIn(req, res, next) {

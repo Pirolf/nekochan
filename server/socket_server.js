@@ -1,4 +1,5 @@
 const GameLoop = require('./game_loop');
+const GameApi = require('./game_api');
 let rooms = {};
 
 module.exports = function(http) {
@@ -12,21 +13,28 @@ module.exports = function(http) {
 				const playerCount = (io.nsps['/'].adapter.rooms[gameUUID] || []).length;
 
 				io.to(gameUUID).emit('joinGame', {
-					message: `${name} joined the game`, 
+					message: `${name} joined the game`,
 					timestamp: Date.now()
 				});
 
 				console.log("playerCount: ", playerCount)
 				if (playerCount === 1) {
 					GameLoop.start(gameUUID, socket.id, (updatedGame) => {
-						io.to(gameUUID).emit('gameUpdate', {
-							game: updatedGame
-						});						
+						io.to(gameUUID).emit('gameUpdate', updatedGame);
 					});
 				}
-			});
+        //game
+        socket.on('assign-job', async (data) => {
+          const result = await GameApi.assignJob(gameUUID, data);
+          result.then((game) => {
+            io.to(gameUUID).emit('gameUpdate', result.game);
+          }, (err) => {
+            console.log(err);
+          })
+        });
+      });
 		});
-		
+
 		socket.on('disconnect', () => {
 			const gameUUID = rooms[socket.id];
 			const playerCount = (io.nsps['/'].adapter.rooms[gameUUID] || []) .length;

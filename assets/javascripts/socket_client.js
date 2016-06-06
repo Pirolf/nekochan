@@ -16,7 +16,11 @@ const Client = {
 
 	authenticate: ({user, gameUUID}) => {
 		socket.emit('authenticate', {user, gameUUID});
-	}
+	},
+
+  assignJob: (formData) => {
+    socket.emit('assign-job', formData);
+  },
 };
 
 module.exports = Client;

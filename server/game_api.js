@@ -1,3 +1,5 @@
+const Game = require('./game');
+
 const catProfessions = ['noProfession', 'explorer'];
 function generateCats(game) {
 	const {cats} = game;
@@ -14,8 +16,28 @@ function generateCats(game) {
 	return game;
 }
 
+function assignJob(gameUUID, {number, currentJob, newJob}) {
+  const currentJobKey = `cats.${currentJob}.count`;
+  const newJobkey = `cats.${newJob}.count`
+  return new Promise((resolve, reject) => {
+    Game.findOneAndUpdate(
+      {uuid: gameUUID},
+      {$inc: {
+        [currentJobKey]: -number,
+        [newJobkey]: number
+      }},
+      {new: true},
+      (err, game) => {
+        if (err) reject(err);
+        resolve(game);
+      }
+    );
+  })
+}
+
 const GameApi = {
-	generateCats
+	generateCats,
+  assignJob
 };
 
 module.exports = GameApi;
