@@ -1,18 +1,28 @@
 const Game = require('./game');
 const GameApi = require('./game_api');
+const {Query} = require('mongoose');
+
 let gameStates = {};
+
+function rejectOnErr(err) {
+  console.log(err);
+  reject(err);
+}
 
 async function update(id) {
 	const date = new Date(Date.now());
 	console.log(date.toString());
 
-	return new Promise((resolve, reject) => {
-    Game.findById(id, (err, game) => {
-      game = GameApi.generateCats(game);
-      game.save().then((savedGame) =>{
+	return new Promise(async (resolve, reject) => {
+    const baseQuery = Game.findById(id);
+    baseQuery.exec((err, game) => {
+      const gameQuery = GameApi.generateCats(game, baseQuery);
+      gameQuery.exec((err, savedGame) => {
+        if (!savedGame.nModified) {
+          resolve(game);
+          return;
+        }
         resolve(savedGame);
-      }, (err) => {
-        reject(err);
       });
     });
 	});

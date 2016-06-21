@@ -9,8 +9,8 @@ const getRoute = require('./helpers/route_helper');
 
 class Application extends React.Component {
 	static propTypes = {
-    	store: React.PropTypes.object.isRequired
-  	};
+  	store: React.PropTypes.object.isRequired
+	};
 
 	newGame = async () => {
 		await Api.createGame();
@@ -32,13 +32,13 @@ class Application extends React.Component {
 		return (
 			<div className="app">
 				<button onClick={this.newGame}>New Game</button>
-				{user && game && <Game {...{user, game}}/>} 
+				{user && game && <Game {...{user, game}}/>}
 			</div>
 		);
 	}
 }
 const ApplicationWithStore = useStore(Application, {
-	store, 
+	store,
 	dispatcherHandlers: [require('./dispatcher')]
 });
 

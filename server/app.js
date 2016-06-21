@@ -54,8 +54,8 @@ app.get('/current-user', (req, res) => {
 		res.sendStatus(401);
 		return;
 	}
-	const {facebook: {name, id}} = req.user;
-	res.send({name, id});
+	const {facebook: {name, id, token}} = req.user;
+	res.send({name, id, token, auth_method: "facebook"});
 });
 
 /*eslint-disable no-console */

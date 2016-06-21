@@ -1,19 +1,29 @@
 const Game = require('./game');
 
 const catProfessions = ['noProfession', 'explorer'];
-function generateCats(game) {
+
+function generateCats(game, query) {
 	const {cats} = game;
 	const totalCats = catProfessions.map(profession => cats[profession].count).reduce((prev, current) => {
 		return prev + current;
 	}, 0);
 
-	const salmons = game.resources.salmon;
-	if (salmons / totalCats > 1.5) {
-		const newCats = Math.floor((salmons - totalCats) / 2);
-		game.cats.noProfession.count = cats.noProfession.count + newCats;
-		game.resources.salmon = salmons - newCats * 2;
-	}
-	return game;
+	const {resources: {salmon: salmons}} = game;
+  if (salmons / totalCats > 0.2) {
+    const newCats = Math.floor((salmons - totalCats) / 2);
+    return query.update({
+      $inc: {
+        'resources.salmon': -newCats * 2,
+        'cats.noProfession.count': newCats
+      }
+    });
+  }
+
+  return query;
+}
+
+function fish(game) {
+
 }
 
 function assignJob(gameUUID, {number, currentJob, newJob}) {
