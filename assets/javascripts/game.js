@@ -28,7 +28,8 @@ class Game extends React.Component {
 	render() {
 		const {game, errors} = this.props;
     const {noProfession: {count: idleCats}, fishercat: {count: fisherCats}, explorer: {count: explorers}} = game.cats;
-		const extractedErrors = extractError("assign-job", errors);
+    const {resources: {salmon}} = game;
+    const extractedErrors = extractError("assign-job", errors);
 		return (
 			<div className="game">
 				Game Area
@@ -45,6 +46,10 @@ class Game extends React.Component {
           </div>
           <div className="cat-row">
             <span className="cat-count">{idleCats}</span><span>kitties</span><span className="cat-action">Doing nothing</span>
+          </div>
+          <h2>Resources</h2>
+          <div className="resource-row">
+            <span className="salmon">{salmon}</span><span>Salmons</span>
           </div>
         </div>
 				<Error errors={extractedErrors} />
