@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "nekos",
   "main": "index.js",
+  "engines": {
+    "node": ">=6.2.0"
+  },
   "scripts": {
     "start": "node server-build/bundle.js",
     "test": "gulp spec"
@@ -58,7 +61,7 @@
     "gulp-jasmine-browser": "^1.3.0",
     "html-loader": "^0.4.3",
     "json-loader": "^0.5.4",
-    "node-sass": "^3.5.3",
+    "node-sass": "^3.8.0",
     "pui-react-tools": "^1.3.1",
     "run-sequence": "^1.1.5",
     "sass-loader": "^3.2.0",
