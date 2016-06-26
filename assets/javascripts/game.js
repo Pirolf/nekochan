@@ -1,13 +1,15 @@
 const React = require('react');
 const SocketClient = require('./socket_client');
-
+const Error = require('./error');
+const {extractError} = require('./helpers/error_helper');
 const serialize = require('form-serialize');
 
 const types = React.PropTypes;
 class Game extends React.Component {
 	static propTypes = {
 		game: types.object.isRequired,
-		user: types.object.isRequired
+		user: types.object.isRequired,
+		errors: types.object.isRequired
 	}
 
 	componentDidMount() {
@@ -24,9 +26,9 @@ class Game extends React.Component {
   }
 
 	render() {
-		const {game} = this.props;
+		const {game, errors} = this.props;
     const {noProfession: {count: idleCats}, fishercat: {count: fisherCats}, explorer: {count: explorers}} = game.cats;
-
+		const extractedErrors = extractError("assign-job", errors);
 		return (
 			<div className="game">
 				Game Area
@@ -45,6 +47,7 @@ class Game extends React.Component {
             <span className="cat-count">{idleCats}</span><span>kitties</span><span className="cat-action">Doing nothing</span>
           </div>
         </div>
+				<Error errors={extractedErrors} />
 				<form onSubmit={this.submit}>
           <span>Make</span>
 					<input type="number" name="number" defaultValue="0"/>

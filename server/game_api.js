@@ -1,5 +1,4 @@
 const Game = require('./game');
-
 const catProfessions = ['noProfession', 'explorer'];
 
 function generateCats(game, query) {
@@ -11,12 +10,15 @@ function generateCats(game, query) {
 	const {resources: {salmon: salmons}} = game;
   if (salmons / totalCats > 0.2) {
     const newCats = Math.floor((salmons - totalCats) / 2);
-    return query.update({
-      $inc: {
-        'resources.salmon': -newCats * 2,
-        'cats.noProfession.count': newCats
-      }
-    });
+    return query.findOneAndUpdate({
+				uuid: game.uuid,
+			},{
+		    $inc: {
+		      'resources.salmon': -newCats * 2,
+		      'cats.noProfession.count': newCats
+		    }
+		  }
+		);
   }
 
   return query;
@@ -29,10 +31,19 @@ function fish(game) {
 function assignJob(gameUUID, {number, currentJob, newJob}) {
   const currentJobKey = `cats.${currentJob}.count`;
   const newJobkey = `cats.${newJob}.count`;
+
   return new Promise((resolve, reject) => {
+		if (number <= 0) {
+			reject(new Error("can only select a positive number of cats"));
+			return;
+		}
+
     Game.findOneAndUpdate(
       {
         uuid: gameUUID,
+				[currentJobKey]: {
+					$gte: number
+				}
       },
       {
         $inc: {
@@ -42,7 +53,16 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
       },
       {new: true},
       (err, game) => {
-        if (err) reject(err);
+        if (err) {
+					reject(err);
+					return;
+				}
+
+				if (!game) {
+					reject(new Error("no update"));
+					return;
+				}
+
         resolve(game);
       }
     );

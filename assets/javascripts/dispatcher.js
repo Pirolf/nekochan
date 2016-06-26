@@ -10,6 +10,14 @@ const Dispatcher = {
 	updateActivityLogs({data: {timestamp, ...rest}}) {
 		const time = (new Date(timestamp)).toString();
 		this.$store.refine('activityLogs').push({time, ...rest});
+	},
+
+	updateErrors({data}) {
+		this.$store.merge({errors: data});
+	},
+
+	clearErrors() {
+		this.$store.refine('errors').set({});
 	}
 };
 

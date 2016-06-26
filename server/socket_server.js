@@ -42,9 +42,14 @@ module.exports = function(http) {
 					});
 				}
         //game
-        socket.on('assign-job', async (data) => {
-          const result = await GameApi.assignJob(gameUUID, data);
-          io.to(gameUUID).emit('gameUpdate', result);
+        socket.on('assign-job', (data) => {
+          const result = GameApi.assignJob(gameUUID, data);
+          result.then((game) => {
+            console.log("assign-job", game)
+            io.to(gameUUID).emit('gameUpdate', game);
+          }, (err) => {
+            io.to(gameUUID).emit('errors', {"assign-job": err.message});
+          })
         });
       });
 		});

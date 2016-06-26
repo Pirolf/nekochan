@@ -12,13 +12,18 @@ const Client = {
 		socket.on('gameUpdate', (data) => {
 			Actions.updateGame(data);
 		});
+
+		socket.on('errors', (data) => {
+			Actions.updateErrors(data);
+		});
 	},
 
 	authenticate: ({user, gameUUID}) => {
 		socket.emit('authenticate', {user, gameUUID});
 	},
 
-  assignJob: (formData) => {
+  assignJob: async (formData) => {
+		await Actions.clearErrors();
     socket.emit('assign-job', formData);
   },
 };

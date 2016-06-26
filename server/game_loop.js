@@ -16,12 +16,10 @@ async function update(id) {
 	return new Promise(async (resolve, reject) => {
     const baseQuery = Game.findById(id);
     baseQuery.exec((err, game) => {
+      console.log(game);
       const gameQuery = GameApi.generateCats(game, baseQuery);
       gameQuery.exec((err, savedGame) => {
-        if (!savedGame.nModified) {
-          resolve(game);
-          return;
-        }
+        //TODO: why does idle cat count swing between 2 numbers?
         resolve(savedGame);
       });
     });

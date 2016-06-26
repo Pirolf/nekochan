@@ -1,7 +1,8 @@
 let store = {
 	user: null,
 	game: null,
-	activityLogs: []
+	activityLogs: [],
+	errors: {},
 };
 
 module.exports = store;

@@ -28,11 +28,11 @@ class Application extends React.Component {
 	}
 
 	render() {
-		const {store: {user, game}} = this.props;
+		const {store: {user, game, errors}} = this.props;
 		return (
 			<div className="app">
 				<button onClick={this.newGame}>New Game</button>
-				{user && game && <Game {...{user, game}}/>}
+				{user && game && <Game {...{user, game, errors}}/>}
 			</div>
 		);
 	}
