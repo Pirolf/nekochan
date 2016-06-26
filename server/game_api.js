@@ -8,6 +8,7 @@ function generateCats(game, query) {
 	}, 0);
 
 	const {resources: {salmon: salmons}} = game;
+  //TODO: fix the ratio
   if (salmons / totalCats > 0.2) {
     const newCats = Math.floor((salmons - totalCats) / 2);
     return query.findOneAndUpdate({
@@ -17,7 +18,9 @@ function generateCats(game, query) {
 		      'resources.salmon': -newCats * 2,
 		      'cats.noProfession.count': newCats
 		    }
-		  }
+		  },{
+        new: true
+      },
 		);
   }
 

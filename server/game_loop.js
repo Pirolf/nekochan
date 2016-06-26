@@ -19,7 +19,6 @@ async function update(id) {
       console.log(game);
       const gameQuery = GameApi.generateCats(game, baseQuery);
       gameQuery.exec((err, savedGame) => {
-        //TODO: why does idle cat count swing between 2 numbers?
         resolve(savedGame);
       });
     });
