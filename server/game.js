@@ -8,10 +8,10 @@ const gameSchema = mongoose.Schema({
     		count: { type: Number, default: 3 }
     	},
       explorer: {
-          count: Number
+          count: { type: Number, default: 0 }
       },
       fishercat: {
-        count: Number
+        count: { type: Number, default: 0 }
       }
     },
     resources: {

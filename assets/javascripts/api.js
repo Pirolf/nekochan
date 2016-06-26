@@ -7,7 +7,7 @@ const api = {
 					reject(err);
 					return;
 				}
-				resolve(JSON.parse(body));
+				resolve(body);
 			});
 		});
 	},

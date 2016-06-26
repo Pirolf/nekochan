@@ -28,14 +28,18 @@ function fish(game) {
 
 function assignJob(gameUUID, {number, currentJob, newJob}) {
   const currentJobKey = `cats.${currentJob}.count`;
-  const newJobkey = `cats.${newJob}.count`
+  const newJobkey = `cats.${newJob}.count`;
   return new Promise((resolve, reject) => {
     Game.findOneAndUpdate(
-      {uuid: gameUUID},
-      {$inc: {
-        [currentJobKey]: -number,
-        [newJobkey]: number
-      }},
+      {
+        uuid: gameUUID,
+      },
+      {
+        $inc: {
+          [currentJobKey]: -number,
+          [newJobkey]: number
+        },
+      },
       {new: true},
       (err, game) => {
         if (err) reject(err);
