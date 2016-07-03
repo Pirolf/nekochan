@@ -5,14 +5,17 @@ const gameSchema = mongoose.Schema({
     uuid: String,
     cats: {
     	noProfession: {
-    		count: { type: Number, default: 3, min: 0 }
+    		count: { type: Number, default: 3, min: 0 },
+        starved: { type: Number, default: 0, min: 0}
     	},
       explorer: {
-          count: { type: Number, default: 0, min: 0 }
+        count: { type: Number, default: 0, min: 0 },
+        starved: { type: Number, default: 0, min: 0}
       },
       fishercat: {
-        count: { type: Number, default: 0, min: 0 }
-      }
+        count: { type: Number, default: 0, min: 0 },
+        starved: { type: Number, default: 0, min: 0}
+      },
     },
     resources: {
       catfish: { type: Number, default: 10, min: 0 },

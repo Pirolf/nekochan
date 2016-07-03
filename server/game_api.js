@@ -61,6 +61,33 @@ function fish(game, query) {
   );
 }
 
+function consumeResources(game, query) {
+  const {
+    noProfession: {count: idleCount},
+    fishercat: {count: fishercatCount},
+    explorer: {count: explorerCount}
+  } = game.cats;
+
+  const {catfish, salmon} = game.resources;
+  const fishNeeded = idleCount * 0.1 + fishercatCount * 0.3 + explorerCount * 0.8;
+
+  let salmonLeft = salmon;
+  const catfishLeft = Math.max(catfish - fishNeeded, 0);
+  if (fishNeeded > catfish) {
+    salmonLeft = Math.max(salmon - 0.3 * (fishNeeded - catfish), 0);
+  }
+
+  return query.findOneAndUpdate({
+      uuid: game.uuid,
+    },{
+      'resources.catfish': catfishLeft,
+      'resources.salmon': salmonLeft
+    },{
+      new: true
+    },
+  );
+}
+
 function assignJob(gameUUID, {number, currentJob, newJob}) {
   const currentJobKey = `cats.${currentJob}.count`;
   const newJobkey = `cats.${newJob}.count`;
