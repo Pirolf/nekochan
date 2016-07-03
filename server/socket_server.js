@@ -45,12 +45,20 @@ module.exports = function(http) {
         socket.on('assign-job', (data) => {
           const result = GameApi.assignJob(gameUUID, data);
           result.then((game) => {
-            console.log("assign-job", game)
             io.to(gameUUID).emit('gameUpdate', game);
           }, (err) => {
             io.to(gameUUID).emit('errors', {"assign-job": err.message});
-          })
+          });
         });
+
+        socket.on('create-cats', (data) => {
+          const result = GameApi.createCats(gameUUID, data);
+          result.then((game) => {
+            io.to(gameUUID).emit('gameUpdate', game);
+          }, (err) => {
+            io.to(gameUUID).emit('errors', {"create-cats": err.message});
+          });
+        })
       });
 		});
 

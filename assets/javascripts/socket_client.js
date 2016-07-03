@@ -26,6 +26,11 @@ const Client = {
 		await Actions.clearErrors();
     socket.emit('assign-job', formData);
   },
+
+  createCats: async (formData) => {
+    await Actions.clearErrors();
+    socket.emit('create-cats', formData)
+  }
 };
 
 module.exports = Client;

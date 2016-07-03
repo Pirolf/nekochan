@@ -1,12 +1,50 @@
 const Game = require('./game');
 const catProfessions = ['noProfession', 'explorer'];
 
+function createCats(uuid, {catsToCreate}) {
+  return new Promise((resolve, reject) => {
+      Game.findOne({uuid: uuid}, (err, game) => {
+        if (err) {
+          reject(new Error("game not found"));
+          return;
+        }
+        const {resources: {catfish}} = game;
+        if (catfish < 10 * catsToCreate) {
+          reject(new Error("not enough cat fish"));
+          return;
+        }
+
+        Game.findOneAndUpdate({uuid: uuid}, {
+            $inc: {
+              'resources.catfish': -10 * catsToCreate,
+              'cats.noProfession.count': catsToCreate
+            },
+          }, {
+            new: true
+          }, (err, updatedGame) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(updatedGame);
+          }
+        )
+      });
+  });
+}
+
 function fish(game, query) {
   const {cats: {fishercat: {count: fishercats}}} = game;
-  let caughtFish = 0;
+  let caughtCatfish = 0, caughtSalmon = 0;
   for (let i=0; i < fishercats; i++) {
-    if (Math.random() > 0.75) {
-      caughtFish += 1;
+    const chance = Math.random();
+    if (chance < 0.05) {
+      caughtSalmon += 1;
+      continue;
+    }
+
+    if (chance < 0.25) {
+      caughtCatfish += 1;
     }
   }
 
@@ -14,7 +52,8 @@ function fish(game, query) {
       uuid: game.uuid,
     },{
       $inc: {
-        'resources.salmon': caughtFish
+        'resources.catfish': caughtCatfish,
+        'resources.salmon': caughtSalmon
       }
     },{
       new: true
@@ -64,8 +103,9 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
 }
 
 const GameApi = {
-  fish,
-  assignJob
+  assignJob,
+  createCats,
+  fish
 };
 
 module.exports = GameApi;

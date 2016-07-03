@@ -1,8 +1,9 @@
 const React = require('react');
 const SocketClient = require('./socket_client');
+const AssignJobForm = require('./assign_job_form');
+const CreateCatsForm = require('./create_cats_form');
 const Error = require('./error');
 const {extractError} = require('./helpers/error_helper');
-const serialize = require('form-serialize');
 
 const types = React.PropTypes;
 class Game extends React.Component {
@@ -18,18 +19,13 @@ class Game extends React.Component {
 		SocketClient.authenticate({user, gameUUID});
 	}
 
-	submit = (e) => {
-    e.preventDefault();
-    const formData = serialize(e.target, {hash: true});
-    console.log(formData);
-    SocketClient.assignJob(formData);
-  }
-
 	render() {
 		const {game, errors} = this.props;
     const {noProfession: {count: idleCats}, fishercat: {count: fisherCats}, explorer: {count: explorers}} = game.cats;
-    const {resources: {salmon}} = game;
-    const extractedErrors = extractError("assign-job", errors);
+    const {resources: {salmon, catfish}} = game;
+    const assignJobErrors = extractError("assign-job", errors);
+    const createCatsErrors = extractError("create-cats", errors);
+
 		return (
 			<div className="game">
 				Game Area
@@ -49,26 +45,16 @@ class Game extends React.Component {
           </div>
           <h2>Resources</h2>
           <div className="resource-row">
-            <span className="salmon">{salmon}</span><span>Salmons</span>
+            <span className="fish">{catfish}</span><span>Catfish</span>
+          </div>
+          <div className="resource-row">
+            <span className="fish">{salmon}</span><span>Salmons</span>
           </div>
         </div>
-				<Error errors={extractedErrors} />
-				<form onSubmit={this.submit}>
-          <span>Make</span>
-					<input type="number" name="number" defaultValue="0"/>
-          <select name="currentJob">
-            <option value="noProfession">Idle</option>
-            <option value="explorer">Explorer</option>
-            <option value="fishercat">Fishercat</option>
-          </select>
-          <span>kitties</span>
-          <select name="newJob">
-            <option value="noProfession">Do nothing</option>
-						<option value="explorer">Explorers</option>
-						<option value="fishercat">Fishercats</option>
-					</select>
-					<input type="submit" defaultValue="update"/>
-				</form>
+				<Error errors={assignJobErrors} />
+        <AssignJobForm />
+        <Error errors={createCatsErrors} />
+        <CreateCatsForm />
 			</div>
 		);
 	}

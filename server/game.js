@@ -15,7 +15,8 @@ const gameSchema = mongoose.Schema({
       }
     },
     resources: {
-    	salmon: { type: Number, default: 10, min: 0 }
+      catfish: { type: Number, default: 10, min: 0 },
+    	salmon: { type: Number, default: 0, min: 0 },
     },
     updated: { type: Date, default: Date.now }
 });
