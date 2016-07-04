@@ -1,7 +1,35 @@
 const Game = require('./game');
 const catProfessions = ['noProfession', 'explorer'];
+const Promise = require('es6-promise').Promise;
 
 function createCats(uuid, {catsToCreate}) {
+  Game.findOne({uuid: uuid}, (err, game) => {
+    if (err) {
+      reject(new Error("game not found"));
+      return;
+    }
+    const {resources: {catfish}} = game;
+    if (catfish < 10 * catsToCreate) {
+      reject(new Error("not enough cat fish"));
+      return;
+    }
+
+    Game.findOneAndUpdate({uuid: uuid}, {
+        $inc: {
+          'resources.catfish': -10 * catsToCreate,
+          'cats.noProfession.count': catsToCreate
+        },
+      }, {
+        new: true
+      }, (err, updatedGame) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(updatedGame);
+      }
+    )
+  });
   return new Promise((resolve, reject) => {
       Game.findOne({uuid: uuid}, (err, game) => {
         if (err) {

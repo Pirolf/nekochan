@@ -28,6 +28,7 @@
   "dependencies": {
     "ajax-request": "^1.2.1",
     "body-parser": "^1.15.1",
+    "es6-promise": "^3.2.1",
     "express": "^4.13.4",
     "express-session": "^1.13.0",
     "form-serialize": "^0.7.1",
@@ -58,15 +59,19 @@
     "css-loader": "^0.23.1",
     "del": "^2.2.0",
     "gulp": "^3.9.1",
-    "gulp-jasmine-browser": "^1.3.0",
+    "gulp-jasmine": "^2.4.0",
+    "gulp-load-plugins": "^1.2.4",
+    "gulp-plumber": "^1.1.0",
+    "gulp-process-env": "0.0.1",
     "html-loader": "^0.4.3",
     "json-loader": "^0.5.4",
     "node-sass": "^3.8.0",
     "pui-react-tools": "^1.3.1",
-    "run-sequence": "^1.1.5",
+    "require-dir": "^0.3.0",
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.0",
+    "webpack-node-externals": "^1.2.0",
     "webpack-stream": "^3.2.0"
   }
 }

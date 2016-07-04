@@ -1,14 +1,12 @@
 const nodeExternals = require('webpack-node-externals');
 module.exports = {
-    target: "node",
-    entry: ['./server/app.js'],
+    target: 'node',
     module: {
         loaders: [{
             test: /\.js/,
-            include: /server/,
             loader: 'babel',
             query: {
-                presets: ['es2015', 'stage-0', 'stage-1', 'stage-2', 'stage-3'],
+                presets: ['es2015', 'react', 'stage-0', 'stage-1', 'stage-2', 'stage-3'],
                 plugins: ['transform-runtime', 'syntax-async-functions']
             }
         },
@@ -16,6 +14,6 @@ module.exports = {
     },
     externals: [nodeExternals()],
     output: {
-        filename: 'bundle.js'
+        filename: 'server-spec.js'
     }
 }
