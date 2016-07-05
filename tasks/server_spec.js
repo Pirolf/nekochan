@@ -6,7 +6,7 @@ const {jasmine, plumber, processEnv} = require('gulp-load-plugins')();
 gulp.task('server-spec', specServer);
 function serverAssets() {
   const testConfig = require('../config/webpack.test.config');
-  return gulp.src(['spec/server/*.js'])
+  return gulp.src(['spec/server/*.js', 'spec/server/*/*.js'])
     .pipe(plumber())
     .pipe(webpack(testConfig))
     .pipe(gulp.dest('specs-build'));

@@ -41,6 +41,7 @@
     "passport-facebook": "^2.1.0",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
+    "recluster": "^0.4.5",
     "socket.io": "^1.4.5",
     "uuid": "^2.0.2"
   },
