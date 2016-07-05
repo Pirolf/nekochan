@@ -1,6 +1,7 @@
 const GameLoop = require('./game_loop');
 const GameApi = require('./game_api');
 const User = require('./user');
+
 let rooms = {};
 
 function isAuthorized({id, token}) {
@@ -14,8 +15,8 @@ function isAuthorized({id, token}) {
   })
 }
 
-module.exports = function(http) {
-	const io = require('socket.io')(http);
+module.exports = function(server) {
+	const io = require('socket.io')(server);
 	/*eslint-disable no-console */
 	io.on('connection', (socket) => {
 		socket.on('authenticate', async ({user: {name, id, token}, gameUUID}) => {

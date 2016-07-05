@@ -1,7 +1,7 @@
 const nodeExternals = require('webpack-node-externals');
 module.exports = {
     target: "node",
-    //entry: ['./server/cluster.js'],
+    entry: ['./server/cluster.js'],
     module: {
         loaders: [{
             test: /\.js/,

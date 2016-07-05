@@ -1,7 +1,6 @@
 const recluster = require('recluster');
 const path = require('path');
-console.log('server path: ',path.join(__dirname, './server', 'app.js'))
-const cluster = recluster('./server/app.js');
+const cluster = recluster('./server/bootstrap.js', {readyWhen: 'ready', workers: 1});
 cluster.run();
 
 process.on('SIGUSR2', function() {

@@ -1,7 +1,4 @@
 const express = require('express');
-const app = express();
-const http = require('http').Server(app);
-require('./socket_server')(http);
 
 const path = require('path');
 const mongoose = require('mongoose');
@@ -13,98 +10,99 @@ const {env, rootPath} = require('./helper');
 
 require('./auth')(passport);
 
-mongoose.connect(config.db.url);
+module.exports = function() {
+  mongoose.connect(config.db.url);
+  const app = express();
 
-app.use(express.static(path.join(rootPath, 'public')));
-app.use('/game', express.static(path.join(rootPath, 'public')));
-app.use(bodyParser());
-app.use(session({ name: 'neko-auth', secret: env.get('SESSION_SECRET') }));
-app.use(passport.initialize());
-app.use(passport.session());
+  app.use(express.static(path.join(rootPath, 'public')));
+  app.use('/game', express.static(path.join(rootPath, 'public')));
+  app.use(bodyParser());
+  app.use(session({ name: 'neko-auth', secret: env.get('SESSION_SECRET') }));
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-const viewPath = path.join(rootPath, "views");
+  const viewPath = path.join(rootPath, "views");
 
-app.get('/', isLoggedIn, (req, res) => {
-  	res.sendFile(path.join(viewPath, 'index.html'));
-});
-
-app.get('/sign-in', (req, res) => {
-	res.sendFile(path.join(viewPath, 'sign-in.html'));
-});
-
-app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
-
-app.get('/auth/facebook/callback', passport.authenticate('facebook', {
-    failureRedirect : '/sign-in'
-}), (req, res) => {
-	res.redirect('/');
-});
-
-app.get('/nekos', isLoggedIn, (req, res) => {
-    res.sendFile(path.join(rootPath, '/views/auth_test.html'));
-});
-
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/sign-in');
-});
-
-app.get('/current-user', (req, res) => {
-	if (!req.isAuthenticated) {
-		res.sendStatus(401);
-		return;
-	}
-	const {facebook: {name, id, token}} = req.user;
-	res.send({name, id, token, auth_method: "facebook"});
-});
-
-/*eslint-disable no-console */
-app.get('/game/:uuid', isLoggedIn, (req, res) => {
-	const Game = require('./game');
-	Game.findOne({uuid: req.params.uuid}, (err, game) => {
-		const userId = req.user.facebook.id;
-		console.log(game.users)
-		const includes = require('lodash.includes');
-		if (!includes(game.users, userId)) {
-			game.users.push(userId);
-			game.save((err) => {
-				if (err) throw err;
-				res.sendFile(path.join(viewPath, 'index.html'));
-				return;
-			});
-		}
-		res.sendFile(path.join(viewPath, 'index.html'));
-	});
-});
-
-app.get('/get-game/:uuid', isLoggedIn, (req, res) => {
-	const Game = require('./game');
-	Game.findOne({ 'uuid' : req.params.uuid }, (err, game) => {
-		if (err) res.sendStatus(422);
-		res.send(game);
-	});
-})
-
-app.post('/create-game', isLoggedIn, (req, res) => {
-	const Game = require('./game');
-	const uuid = require('uuid');
-	let game = new Game();
-	game.users.push(req.user.facebook.id);
-	game.uuid = uuid.v1();
-
-  game.save((err) => {
-    if (err) throw err;
-  	console.log(`Create game: ${game.uuid}`);
-    res.redirect(`/game/${game.uuid}`);
+  app.get('/', isLoggedIn, (req, res) => {
+    	res.sendFile(path.join(viewPath, 'index.html'));
   });
-});
 
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    res.redirect('/sign-in');
+  app.get('/sign-in', (req, res) => {
+  	res.sendFile(path.join(viewPath, 'sign-in.html'));
+  });
+
+  app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
+
+  app.get('/auth/facebook/callback', passport.authenticate('facebook', {
+      failureRedirect : '/sign-in'
+  }), (req, res) => {
+  	res.redirect('/');
+  });
+
+  app.get('/nekos', isLoggedIn, (req, res) => {
+      res.sendFile(path.join(rootPath, '/views/auth_test.html'));
+  });
+
+  app.get('/logout', (req, res) => {
+      req.logout();
+      res.redirect('/sign-in');
+  });
+
+  app.get('/current-user', (req, res) => {
+  	if (!req.isAuthenticated) {
+  		res.sendStatus(401);
+  		return;
+  	}
+  	const {facebook: {name, id, token}} = req.user;
+  	res.send({name, id, token, auth_method: "facebook"});
+  });
+
+  /*eslint-disable no-console */
+  app.get('/game/:uuid', isLoggedIn, (req, res) => {
+  	const Game = require('./game');
+  	Game.findOne({uuid: req.params.uuid}, (err, game) => {
+  		const userId = req.user.facebook.id;
+  		console.log(game.users)
+  		const includes = require('lodash.includes');
+  		if (!includes(game.users, userId)) {
+  			game.users.push(userId);
+  			game.save((err) => {
+  				if (err) throw err;
+  				res.sendFile(path.join(viewPath, 'index.html'));
+  				return;
+  			});
+  		}
+  		res.sendFile(path.join(viewPath, 'index.html'));
+  	});
+  });
+
+  app.get('/get-game/:uuid', isLoggedIn, (req, res) => {
+  	const Game = require('./game');
+  	Game.findOne({ 'uuid' : req.params.uuid }, (err, game) => {
+  		if (err) res.sendStatus(422);
+  		res.send(game);
+  	});
+  })
+
+  app.post('/create-game', isLoggedIn, (req, res) => {
+  	const Game = require('./game');
+  	const uuid = require('uuid');
+  	let game = new Game();
+  	game.users.push(req.user.facebook.id);
+  	game.uuid = uuid.v1();
+
+    game.save((err) => {
+      if (err) throw err;
+    	console.log(`Create game: ${game.uuid}`);
+      res.redirect(`/game/${game.uuid}`);
+    });
+  });
+
+  function isLoggedIn(req, res, next) {
+      if (req.isAuthenticated()) return next();
+      res.redirect('/sign-in');
+  }
+
+  return app;
 }
-
-http.listen(3000, () => {
-	console.log('listening on *:3000');
-});
 /*eslint-enable no-console */
