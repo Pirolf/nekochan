@@ -1,5 +1,5 @@
-function roundTo(num, digits) {
-  return parseInt(num.toFixed(digits), 10);
+function roundTo(num, digits = 1) {
+  return Number(num.toFixed(digits));
 }
 
 module.exports = {

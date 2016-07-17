@@ -4,11 +4,6 @@ const {Query} = require('mongoose');
 
 let gameStates = {};
 
-function rejectOnErr(err) {
-  console.log(err);
-  reject(err);
-}
-
 async function update(id) {
 	const date = new Date(Date.now());
 	console.log(date.toString());
@@ -16,8 +11,14 @@ async function update(id) {
 	return new Promise(async (resolve, reject) => {
     const baseQuery = Game.findById(id);
     baseQuery.exec((err, game) => {
-      const gameQuery = GameApi.fish(game, baseQuery);
-      gameQuery.exec((err, savedGame) => {
+      GameApi.fish(game);
+      GameApi.consumeResources(game);
+      game.save((err, savedGame) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+          return;
+        }
         resolve(savedGame);
       });
     });

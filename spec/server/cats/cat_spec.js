@@ -1,6 +1,6 @@
 describe("Cats", () => {
   const Cat = require('../../../server/cats/cat');
-  describe('eat', () => {
+  describe('#eat', () => {
     let cat;
     beforeEach(() => {
       cat = new Cat({catfish: 0.5, salmon: 0.2}, 10);

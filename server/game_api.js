@@ -1,4 +1,6 @@
 const Game = require('./game');
+const CatsFactory = require('./factories/cats_factory');
+
 const catProfessions = ['noProfession', 'explorer'];
 const Promise = require('es6-promise').Promise;
 
@@ -61,59 +63,31 @@ function createCats(uuid, {catsToCreate}) {
   });
 }
 
-function fish(game, query) {
-  const {cats: {fishercat: {count: fishercats}}} = game;
-  let caughtCatfish = 0, caughtSalmon = 0;
-  for (let i=0; i < fishercats; i++) {
-    const chance = Math.random();
-    if (chance < 0.05) {
-      caughtSalmon += 1;
-      continue;
-    }
-
-    if (chance < 0.25) {
-      caughtCatfish += 1;
-    }
-  }
-
-  return query.findOneAndUpdate({
-      uuid: game.uuid,
-    },{
-      $inc: {
-        'resources.catfish': caughtCatfish,
-        'resources.salmon': caughtSalmon
-      }
-    },{
-      new: true
-    },
-  );
+function fish(game) {
+  const {resources, cats: {fishercat: {count: fishercats}}} = game;
+  const fisherCat = CatsFactory.makeFishercat(fishercats);
+  const updatedResources = fisherCat.fish(resources);
+  game.resources = updatedResources;
 }
 
-function consumeResources(game, query) {
+function consumeResources(game) {
   const {
     noProfession: {count: idleCount},
     fishercat: {count: fishercatCount},
     explorer: {count: explorerCount}
   } = game.cats;
 
-  const {catfish, salmon} = game.resources;
-  const fishNeeded = idleCount * 0.1 + fishercatCount * 0.3 + explorerCount * 0.8;
+  const cats = CatsFactory.makeCats({explorer: explorerCount, fishercat: fishercatCount, noProfession: idleCount});
 
-  let salmonLeft = salmon;
-  const catfishLeft = Math.max(catfish - fishNeeded, 0);
-  if (fishNeeded > catfish) {
-    salmonLeft = Math.max(salmon - 0.3 * (fishNeeded - catfish), 0);
-  }
+  let leftFood = game.resources;
+  Object.values(cats).forEach((cat) => {
+    leftFood = cat.eat(leftFood);
+  });
 
-  return query.findOneAndUpdate({
-      uuid: game.uuid,
-    },{
-      'resources.catfish': catfishLeft,
-      'resources.salmon': salmonLeft
-    },{
-      new: true
-    },
-  );
+  game.resources = leftFood;
+  ['noProfession', 'fishercat', 'explorer'].forEach((k) => {
+    game.cats[k].count = cats[k].count;
+  });
 }
 
 function assignJob(gameUUID, {number, currentJob, newJob}) {
@@ -159,8 +133,9 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
 
 const GameApi = {
   assignJob,
+  consumeResources,
   createCats,
-  fish
+  fish,
 };
 
 module.exports = GameApi;
