@@ -4,6 +4,8 @@ specs-build/*
 config/config.js
 .env
 
+pids
+
 # Logs
 logs
 *.log

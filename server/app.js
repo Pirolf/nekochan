@@ -98,6 +98,11 @@ module.exports = function() {
     });
   });
 
+  app.get('/test', (req, res) => {
+      console.log('test');
+      res.send("miao")
+  });
+
   function isLoggedIn(req, res, next) {
       if (req.isAuthenticated()) return next();
       res.redirect('/sign-in');

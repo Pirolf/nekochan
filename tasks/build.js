@@ -1,11 +1,12 @@
 const del = require('del');
 const gulp = require('gulp');
 const webpack = require('webpack-stream');
+const runSequence = require('run-sequence');
 
 const clientWebpackConfig = require('../config/webpack.client.config');
 const serverWebpackConfig = require('../config/webpack.server.config');
-
 gulp.task('buildClient', (done) => {
+
     buildClient();
     done();
 });
@@ -15,8 +16,8 @@ gulp.task('buildServer', (done) => {
     done();
 });
 
-gulp.task('build', ['clean', 'buildClient', 'buildServer'], (done) => {
-    done();
+gulp.task('build', (done) => {
+  runSequence('clean', 'buildClient', 'buildServer', done)
 });
 
 function buildClient() {
