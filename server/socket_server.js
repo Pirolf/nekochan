@@ -1,5 +1,5 @@
 const GameLoop = require('./game_loop');
-const GameApi = require('./game_api');
+const GameApi = require('./api/game_api');
 const User = require('./user');
 
 let rooms = {};

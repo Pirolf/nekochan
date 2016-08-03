@@ -1,24 +1,32 @@
-const request = require('ajax-request');
-const api = {
+const request = require('request');
+const {baseUrl} = require('../../config/config.js');
+const urljoin = require('url-join');
+const ApiHelper = require('./helpers/api_helper');
+
+function baseRequest() {
+  return request.defaults({baseUrl});
+}
+
+const Api = {
 	createGame: () => {
 		return new Promise((resolve, reject) => {
-			request({url: '/create-game', method: 'POST'}, (err, res, body) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(body);
+			baseRequest().post({url: '/create-game'}, (err, res, body) => {
+        if (ApiHelper.baseReject(reject, err, res.statusCode)) {
+          return;
+        }
+        const {uuid} = JSON.parse(body);
+        ApiHelper.redirect(urljoin(baseUrl, 'game', uuid));
+        resolve(body);
 			});
 		});
 	},
 
 	getGame: ({uuid}) => {
 		return new Promise((resolve, reject) => {
-			request({url: `/get-game/${uuid}`, method: 'GET'}, (err, res, body) => {
-				if (err) {
-					reject(err);
-					return;
-				}
+			baseRequest().get(`/get-game/${uuid}`, (err, res, body) => {
+        if (ApiHelper.baseReject(reject, err, res.statusCode)) {
+          return;
+        }
 				resolve(JSON.parse(body));
 			});
 		});
@@ -26,15 +34,14 @@ const api = {
 
 	getUser: () => {
 		return new Promise((resolve, reject) => {
-			request({url: '/current-user', method: 'GET'}, (err, res, body) => {
-				if (err) {
-					reject(err);
-					return;
-				}
+			baseRequest().get('/current-user', (err, res, body) => {
+        if (ApiHelper.baseReject(reject, err, res.statusCode)) {
+          return;
+        }
 				resolve(JSON.parse(body));
 			});
 		});
 	}
 };
 
-module.exports = api;
+module.exports = Api;

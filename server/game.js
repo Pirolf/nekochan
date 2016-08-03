@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const map = require('./game_map');
+const numberType = { type: Number, default: 0, min: 0 };
 const gameSchema = mongoose.Schema({
     users: [String], //users' fb ids
     uuid: String,
@@ -8,16 +10,21 @@ const gameSchema = mongoose.Schema({
     		count: { type: Number, default: 3, min: 0 },
     	},
       explorer: {
-        count: { type: Number, default: 0, min: 0 },
+        count: numberType,
+        locations: {
+          name: String,
+          count: numberType
+        },
       },
       fishercat: {
-        count: { type: Number, default: 0, min: 0 },
+        count: numberType,
       },
-      starved: { type: Number, default: 0, min: 0}
+      starved: numberType,
     },
+    map: map,
     resources: {
       catfish: { type: Number, default: 10, min: 0 },
-    	salmon: { type: Number, default: 0, min: 0 },
+    	salmon: numberType,
     },
     updated: { type: Date, default: Date.now }
 });

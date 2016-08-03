@@ -1,5 +1,5 @@
 const Game = require('./game');
-const GameApi = require('./game_api');
+const GameApi = require('./api/game_api');
 const {Query} = require('mongoose');
 
 let gameStates = {};

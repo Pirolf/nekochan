@@ -1,8 +1,7 @@
-const Game = require('./game');
-const CatsFactory = require('./factories/cats_factory');
+const Game = require('../game');
+const CatsFactory = require('../factories/cats_factory');
 
 const catProfessions = ['noProfession', 'explorer'];
-const Promise = require('es6-promise').Promise;
 
 function createCats(uuid, {catsToCreate}) {
   Game.findOne({uuid: uuid}, (err, game) => {

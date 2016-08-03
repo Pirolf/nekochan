@@ -5,8 +5,8 @@ const runSequence = require('run-sequence');
 
 const clientWebpackConfig = require('../config/webpack.client.config');
 const serverWebpackConfig = require('../config/webpack.server.config');
-gulp.task('buildClient', (done) => {
 
+gulp.task('buildClient', (done) => {
     buildClient();
     done();
 });

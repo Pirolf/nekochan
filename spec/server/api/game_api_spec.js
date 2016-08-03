@@ -1,9 +1,9 @@
 describe('GameApi', () => {
-  const GameApi = require('../../server/game_api');
-  const CatsFactory = require('../../server/factories/cats_factory');
-  const IdleCat = require('../../server/cats/idle_cat');
-  const FisherCat = require('../../server/cats/fisher_cat');
-  const ExplorerCat = require('../../server/cats/explorer_cat');
+  const GameApi = require('../../../server/api/game_api');
+  const CatsFactory = require('../../../server/factories/cats_factory');
+  const IdleCat = require('../../../server/cats/idle_cat');
+  const FisherCat = require('../../../server/cats/fisher_cat');
+  const ExplorerCat = require('../../../server/cats/explorer_cat');
 
   describe("#consumeResources", () => {
     let game;

@@ -1,17 +1,14 @@
 const express = require('express');
-
 const path = require('path');
-const mongoose = require('mongoose');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const config = require('../config/config');
 const {env, rootPath} = require('./helper');
+const ApiHandlers = require('./handlers/api_handlers');
 
 require('./auth')(passport);
 
 module.exports = function() {
-  mongoose.connect(config.db.url);
   const app = express();
 
   app.use(express.static(path.join(rootPath, 'public')));
@@ -76,27 +73,9 @@ module.exports = function() {
   	});
   });
 
-  app.get('/get-game/:uuid', isLoggedIn, (req, res) => {
-  	const Game = require('./game');
-  	Game.findOne({ 'uuid' : req.params.uuid }, (err, game) => {
-  		if (err) res.sendStatus(422);
-  		res.send(game);
-  	});
-  })
+  app.get('/get-game/:uuid', isLoggedIn, ApiHandlers.getGame);
 
-  app.post('/create-game', isLoggedIn, (req, res) => {
-  	const Game = require('./game');
-  	const uuid = require('uuid');
-  	let game = new Game();
-  	game.users.push(req.user.facebook.id);
-  	game.uuid = uuid.v1();
-
-    game.save((err) => {
-      if (err) throw err;
-    	console.log(`Create game: ${game.uuid}`);
-      res.redirect(`/game/${game.uuid}`);
-    });
-  });
+  app.post('/create-game', isLoggedIn, ApiHandlers.createGame);
 
   app.get('/test', (req, res) => {
       console.log('test');

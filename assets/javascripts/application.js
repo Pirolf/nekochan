@@ -7,6 +7,8 @@ const useStore = require('p-flux').useStore;
 const store = require('./store');
 const getRoute = require('./helpers/route_helper');
 
+require('es6-promise').polyfill();
+
 class Application extends React.Component {
 	static propTypes = {
   	store: React.PropTypes.object.isRequired
