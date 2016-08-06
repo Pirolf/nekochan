@@ -1,10 +1,10 @@
-const Game = require('../game');
+const Game = require('../models/game');
 const CatsFactory = require('../factories/cats_factory');
 
 const catProfessions = ['noProfession', 'explorer'];
 
 function createCats(uuid, {catsToCreate}) {
-  Game.findOne({uuid: uuid}, (err, game) => {
+  Game.findOne({uuid}, (err, game) => {
     if (err) {
       reject(new Error("game not found"));
       return;
@@ -15,7 +15,7 @@ function createCats(uuid, {catsToCreate}) {
       return;
     }
 
-    Game.findOneAndUpdate({uuid: uuid}, {
+    Game.findOneAndUpdate({uuid}, {
         $inc: {
           'resources.catfish': -10 * catsToCreate,
           'cats.noProfession.count': catsToCreate
@@ -32,7 +32,7 @@ function createCats(uuid, {catsToCreate}) {
     )
   });
   return new Promise((resolve, reject) => {
-      Game.findOne({uuid: uuid}, (err, game) => {
+      Game.findOne({uuid}, (err, game) => {
         if (err) {
           reject(new Error("game not found"));
           return;
@@ -43,7 +43,7 @@ function createCats(uuid, {catsToCreate}) {
           return;
         }
 
-        Game.findOneAndUpdate({uuid: uuid}, {
+        Game.findOneAndUpdate({uuid}, {
             $inc: {
               'resources.catfish': -10 * catsToCreate,
               'cats.noProfession.count': catsToCreate
@@ -89,6 +89,34 @@ function consumeResources(game) {
   });
 }
 
+async function travel(uuid, {src, dest, travellerCount}) {
+  return Game.findOne({uuid}).exec().then(game => {
+    const mapConfig = require('../map_config');
+    const toPairs = require('lodash.topairs');
+    const resourceUpdates = toPairs(mapConfig[dest].requirements).reduce((memo, [k, v]) => {
+      memo[k] = game.resources[k] - v * travellerCount;
+      return memo;
+    }, {});
+    const requirementsMet = Object.values(resourceUpdates).every(v => v >= 0);
+    if (!requirementsMet) {
+      return Promise.resolve({requirementsNotMet: true});
+    }
+    const locationUpdates = game.cats.explorer.locations.map(({name, explorerCount}) => {
+      switch (name) {
+        case src:
+          return {name, explorerCount: explorerCount - travellerCount};
+        case dest:
+          return {name, explorerCount: explorerCount + travellerCount};
+        default:
+          return {name, explorerCount};
+      }
+    });
+    return Game.findOneAndUpdate({uuid}, {resources: resourceUpdates, 'cats.explorer.locations': locationUpdates}, {new: true}).exec();
+  }, err => {
+    return Promise.reject(err);
+  });
+}
+
 function assignJob(gameUUID, {number, currentJob, newJob}) {
   const currentJobKey = `cats.${currentJob}.count`;
   const newJobkey = `cats.${newJob}.count`;
@@ -100,18 +128,8 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
 		}
 
     Game.findOneAndUpdate(
-      {
-        uuid: gameUUID,
-				[currentJobKey]: {
-					$gte: number
-				}
-      },
-      {
-        $inc: {
-          [currentJobKey]: -number,
-          [newJobkey]: number
-        },
-      },
+      { uuid: gameUUID, [currentJobKey]: { $gte: number } },
+      { $inc: { [currentJobKey]: -number, [newJobkey]: number }, },
       {new: true},
       (err, game) => {
         if (err) {
@@ -135,6 +153,7 @@ const GameApi = {
   consumeResources,
   createCats,
   fish,
+  travel
 };
 
 module.exports = GameApi;

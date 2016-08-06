@@ -83,4 +83,59 @@ describe('GameApi', () => {
       }));
     });
   });
+
+  describe('#travel', () => {
+    const Game = require('../../../server/models/game');
+    let mockGame, mockFindQuery, mockFindOneAndUpdateQuery;
+
+    beforeEach(() => {
+      mockGame = {
+        uuid: 'abc123',
+        resources: {salmonJerkey: 22},
+        cats: {
+          explorer: {
+            count: 6,
+            locations: [{name: 'some-location', explorerCount: 5}, {name: 'takashima', explorerCount: 1}]
+          }
+        }
+      };
+      mockFindQuery = jasmine.createSpyObj('query', ['exec']);
+      mockFindOneAndUpdateQuery = jasmine.createSpyObj('query', ['exec']);
+      mockFindOneAndUpdateQuery.exec.and.returnValue(Promise.resolve('findOneAndUpdateResolve'));
+      spyOn(Game, 'findOne').and.returnValue(mockFindQuery);
+      spyOn(Game, 'findOneAndUpdate').and.returnValue(mockFindOneAndUpdateQuery);
+    });
+
+    describe('when requirements are met', () => {
+      beforeEach(() => {
+        mockFindQuery.exec.and.returnValue(Promise.resolve(mockGame));
+      });
+
+      it.async('send travellers to destination', async () => {
+        const result = await GameApi.travel('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
+        expect(Game.findOneAndUpdate).toHaveBeenCalledWith(
+          {uuid: 'abc123'},
+          {
+            resources: {salmonJerkey: 2},
+            'cats.explorer.locations': [{name: 'some-location', explorerCount: 3}, {name: 'takashima', explorerCount: 3}]
+          },
+          {new: true}
+        );
+        expect(result).toEqual('findOneAndUpdateResolve');
+      });
+    });
+
+    describe('when requirements are not met', () => {
+      beforeEach(() => {
+        mockGame = {...mockGame, resources: {salmonJerkey: 12}};
+        mockFindQuery.exec.and.returnValue(Promise.resolve(mockGame));
+      });
+
+      it.async('does nothing', async () => {
+        const result = await GameApi.travel('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
+        expect(Game.findOneAndUpdate).not.toHaveBeenCalled();
+        expect(result).toEqual({requirementsNotMet: true});
+      });
+    });
+  });
 });

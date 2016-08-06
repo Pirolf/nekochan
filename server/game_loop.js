@@ -1,4 +1,4 @@
-const Game = require('./game');
+const Game = require('./models/game');
 const GameApi = require('./api/game_api');
 const {Query} = require('mongoose');
 

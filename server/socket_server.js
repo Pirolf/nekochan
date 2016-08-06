@@ -1,19 +1,25 @@
 const GameLoop = require('./game_loop');
 const GameApi = require('./api/game_api');
-const User = require('./user');
+const User = require('./models/user');
 
 let rooms = {};
 
 function isAuthorized({id, token}) {
   const result = User.findOne({'facebook.id': id, 'facebook.token': token});
-  return new Promise((resolve) => {
-    result.then((user) => {
-      resolve(true);
-    }, (err) => {
-      resolve(false);
-    })
-  })
+  return result.exec().then(() => Promise.resolve(true), () => Promise.resolve(false));
 }
+
+function socketEvent(name, socket, gameUUID) {
+  return socket.on(name, (data) => {
+    const camelCase = require('camelcase');
+    const result = GameApi[camelCase(name)](gameUUID, data);
+    result.then((game) => {
+      io.to(gameUUID).emit('gameUpdate', game);
+    }, (err) => {
+      io.to(gameUUID).emit('errors', {"travel": err.message});
+    });
+  });
+};
 
 module.exports = function(server) {
 	const io = require('socket.io')(server);
@@ -43,23 +49,9 @@ module.exports = function(server) {
 					});
 				}
         //game
-        socket.on('assign-job', (data) => {
-          const result = GameApi.assignJob(gameUUID, data);
-          result.then((game) => {
-            io.to(gameUUID).emit('gameUpdate', game);
-          }, (err) => {
-            io.to(gameUUID).emit('errors', {"assign-job": err.message});
-          });
-        });
-
-        socket.on('create-cats', (data) => {
-          const result = GameApi.createCats(gameUUID, data);
-          result.then((game) => {
-            io.to(gameUUID).emit('gameUpdate', game);
-          }, (err) => {
-            io.to(gameUUID).emit('errors', {"create-cats": err.message});
-          });
-        })
+        socketEvent('assign-job', socket, gameUUID);
+        socketEvent('create-cats', socket, gameUUID);
+        socketEvent('travel-to', socket, gameUUID);
       });
 		});
 

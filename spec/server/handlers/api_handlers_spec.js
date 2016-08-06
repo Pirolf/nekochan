@@ -2,7 +2,7 @@ require('../../spec_helper');
 
 describe('Api handlers', () => {
   const Handlers = require('../../../server/handlers/api_handlers');
-  const Game = require('../../../server/game');
+  const Game = require('../../../server/models/game');
   const mongoose = require('mongoose');
   const uuid = require('uuid');
 
@@ -29,7 +29,12 @@ describe('Api handlers', () => {
 
       mockRes.send.calls.reset();
       await Handlers.getGame({params: {uuid: 'abc123'}}, mockRes);
-      expect(mockRes.send).toHaveBeenCalledWith(jasmine.objectContaining({uuid: 'abc123', users: ['some-fb-id']}))
+      const game = mockRes.send.calls.mostRecent().args[0]
+      expect(game).toEqual(jasmine.objectContaining({
+        uuid: 'abc123',
+        users: ['some-fb-id']
+      }));
+      expect(game.cats.explorer.locations).toEqual([jasmine.objectContaining({name: 'base', explorerCount: 0})]);
     });
   });
 

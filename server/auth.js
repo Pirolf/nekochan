@@ -1,6 +1,6 @@
 const FacebookStrategy = require('passport-facebook').Strategy;
 
-const User = require('./user');
+const User = require('./models/user');
 const configAuth = require('../config/config');
 
 module.exports = (passport) => {
@@ -29,8 +29,8 @@ module.exports = (passport) => {
 
                 const {id, displayName, emails} = profile;
                 const newUser = new User();
-                
-                newUser.facebook.id = id;                   
+
+                newUser.facebook.id = id;
                 newUser.facebook.token = token;
                 newUser.facebook.name = displayName;
                 newUser.facebook.email = emails[0].value;

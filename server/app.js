@@ -56,7 +56,7 @@ module.exports = function() {
 
   /*eslint-disable no-console */
   app.get('/game/:uuid', isLoggedIn, (req, res) => {
-  	const Game = require('./game');
+  	const Game = require('./models/game');
   	Game.findOne({uuid: req.params.uuid}, (err, game) => {
   		const userId = req.user.facebook.id;
   		console.log(game.users)

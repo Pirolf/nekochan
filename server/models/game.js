@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const map = require('./game_map');
+const LocationSchema = require('./location');
+
 const numberType = { type: Number, default: 0, min: 0 };
 const gameSchema = mongoose.Schema({
     users: [String], //users' fb ids
@@ -11,10 +13,7 @@ const gameSchema = mongoose.Schema({
     	},
       explorer: {
         count: numberType,
-        locations: {
-          name: String,
-          count: numberType
-        },
+        locations: [LocationSchema]
       },
       fishercat: {
         count: numberType,

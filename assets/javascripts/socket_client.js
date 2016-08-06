@@ -30,6 +30,11 @@ const Client = {
   createCats: async (formData) => {
     await Actions.clearErrors();
     socket.emit('create-cats', formData)
+  },
+
+  travel: async (formData) => {
+    await Actions.clearErrors();
+    socket.emit('travel', formData);
   }
 };
 

@@ -1,11 +1,10 @@
 require('es6-promise').polyfill();
 const jasmineAsync = require('jasmine-async-suite');
 const MockPromise = require('mock-promises');
-const MockNextTick = require('./support/mock_next_tick');
 
 jasmineAsync.install();
 
-const globals = {MockPromise, MockNextTick};
+const globals = {MockPromise};
 Object.assign(global, globals);
 
 beforeEach(() => {

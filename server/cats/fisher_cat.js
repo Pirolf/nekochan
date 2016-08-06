@@ -17,7 +17,7 @@ class FisherCat extends Cat {
         continue;
       }
 
-      if (chance < 0.25) {
+      if (chance < 0.65) {
         caughtCatfish += 1;
       }
     }
