@@ -1,7 +1,18 @@
-module.exports = {
+const mapConfig = {
+  base: {
+    distance: 0,
+    type: "base",
+    requirements: {}
+  },
   takashima: {
     distance: 450,
     type: "base",
-    requirements: {salmonJerkey: 10}
+    requirements: {salmon: 3}
+  }
+};
+
+module.exports = {
+  getConfig() {
+    return mapConfig;
   }
 };

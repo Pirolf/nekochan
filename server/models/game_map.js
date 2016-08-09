@@ -6,8 +6,7 @@ module.exports = {
           chance: {type: Number, default: 0.01, min: 0},
           range: [Number]
         },
-      },
-      discovered: Boolean
+      }
     }
   }
 };

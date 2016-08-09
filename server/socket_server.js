@@ -51,7 +51,7 @@ module.exports = function(server) {
         //game
         socketEvent('assign-job', socket, gameUUID);
         socketEvent('create-cats', socket, gameUUID);
-        socketEvent('travel-to', socket, gameUUID);
+        socketEvent('travel', socket, gameUUID);
       });
 		});
 

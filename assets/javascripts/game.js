@@ -2,6 +2,7 @@ const React = require('react');
 const SocketClient = require('./socket_client');
 const AssignJobForm = require('./assign_job_form');
 const CreateCatsForm = require('./create_cats_form');
+const TravelForm = require('./travel_form');
 const Error = require('./error');
 const {extractError} = require('./helpers/error_helper');
 
@@ -25,7 +26,7 @@ class Game extends React.Component {
     const {resources: {salmon, catfish}} = game;
     const assignJobErrors = extractError("assign-job", errors);
     const createCatsErrors = extractError("create-cats", errors);
-
+    const {map, cats: {explorer: {locations}}} = game;
 		return (
 			<div className="game">
 				Game Area
@@ -55,6 +56,7 @@ class Game extends React.Component {
         <AssignJobForm />
         <Error errors={createCatsErrors} />
         <CreateCatsForm />
+        <TravelForm {...{map, locations}}/>
 			</div>
 		);
 	}

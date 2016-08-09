@@ -8,7 +8,7 @@ gulp.task('server-spec', specServer);
 
 function serverAssets() {
   const testConfig = require('../config/webpack.test.config');
-  return gulp.src(['spec/spec_helper.js', 'spec/server/*.js', 'spec/server/*/*.js'])
+  return gulp.src(['spec/spec_helper.js', 'spec/server/*.js', 'spec/server/*/*.js', 'spec/server/support/*.js'])
     .pipe(plumber())
     .pipe(webpack(testConfig))
     .pipe(gulp.dest('specs-build'));

@@ -1,5 +1,6 @@
 const Game = require('../models/game');
 const CatsFactory = require('../factories/cats_factory');
+const {stringToInt} = require('../helpers/math_helper');
 
 const catProfessions = ['noProfession', 'explorer'];
 
@@ -89,12 +90,15 @@ function consumeResources(game) {
   });
 }
 
-async function travel(uuid, {src, dest, travellerCount}) {
+function travel(uuid, {src, dest, travellerCount}) {
+  const {number: count, ok} = stringToInt(travellerCount);
+  if (!ok) return Promise.reject(new Error('bad request'));
+  //TODO: use mongo query if possible
   return Game.findOne({uuid}).exec().then(game => {
-    const mapConfig = require('../map_config');
+    const MapConfig = require('../map_config');
     const toPairs = require('lodash.topairs');
-    const resourceUpdates = toPairs(mapConfig[dest].requirements).reduce((memo, [k, v]) => {
-      memo[k] = game.resources[k] - v * travellerCount;
+    const resourceUpdates = toPairs(MapConfig.getConfig()[dest].requirements).reduce((memo, [k, v]) => {
+      memo[k] = game.resources[k] - v * count;
       return memo;
     }, {});
     const requirementsMet = Object.values(resourceUpdates).every(v => v >= 0);
@@ -104,9 +108,9 @@ async function travel(uuid, {src, dest, travellerCount}) {
     const locationUpdates = game.cats.explorer.locations.map(({name, explorerCount}) => {
       switch (name) {
         case src:
-          return {name, explorerCount: explorerCount - travellerCount};
+          return {name, explorerCount: explorerCount - count};
         case dest:
-          return {name, explorerCount: explorerCount + travellerCount};
+          return {name, explorerCount: explorerCount + count};
         default:
           return {name, explorerCount};
       }
@@ -119,33 +123,31 @@ async function travel(uuid, {src, dest, travellerCount}) {
 
 function assignJob(gameUUID, {number, currentJob, newJob}) {
   const currentJobKey = `cats.${currentJob}.count`;
-  const newJobkey = `cats.${newJob}.count`;
+  const {number: count, ok} = stringToInt(number);
+  if (!ok) return Promise.reject(new Error('bad request'));
 
-  return new Promise((resolve, reject) => {
-		if (number <= 0) {
-			reject(new Error("can only select a positive number of cats"));
-			return;
-		}
+  if (count <= 0) {
+    return Promise.reject(new Error('can only select a positive number of cats'));
+  }
 
-    Game.findOneAndUpdate(
-      { uuid: gameUUID, [currentJobKey]: { $gte: number } },
-      { $inc: { [currentJobKey]: -number, [newJobkey]: number }, },
-      {new: true},
-      (err, game) => {
-        if (err) {
-					reject(err);
-					return;
-				}
-
-				if (!game) {
-					reject(new Error("no update"));
-					return;
-				}
-
-        resolve(game);
-      }
-    );
-  })
+  return Game.findOne({uuid: gameUUID, [currentJobKey]: { $gte: number }}).exec()
+  .then((game) => {
+    game.cats[currentJob].count -= count;
+    game.cats[newJob].count += count;
+    if (currentJob === 'explorer') {
+      const oldLocations = game.cats[currentJob].locations;
+      const base = oldLocations.find(l => l.name === 'base');
+      game.cats[currentJob].locations = oldLocations.filter(l => l.name !== 'base').concat([{name: base.name, explorerCount: base.explorerCount - number}]);
+    }
+    if (newJob === 'explorer') {
+      const oldLocations = game.cats[newJob].locations;
+      const base = oldLocations.find(l => l.name === 'base');
+      game.cats[newJob].locations = oldLocations.filter(l => l.name !== 'base').concat({name: base.name, explorerCount: base.explorerCount + number});
+    }
+    return game.save().then(g => Promise.resolve(g), e => Promise.reject(e));
+  }, (err) => {
+    return Promise.reject(err);
+  });
 }
 
 const GameApi = {

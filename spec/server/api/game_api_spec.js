@@ -4,6 +4,94 @@ describe('GameApi', () => {
   const IdleCat = require('../../../server/cats/idle_cat');
   const FisherCat = require('../../../server/cats/fisher_cat');
   const ExplorerCat = require('../../../server/cats/explorer_cat');
+  const mongoose = require('mongoose');
+
+  function timeout(t) {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, t);
+    });
+  }
+
+  describe('#assignJob', () => {
+    const Game = require('../../../server/models/game');
+    let gameUUID, game, saveSpy;
+    beforeEach.async(async () => {
+      MockPromise.uninstall();
+
+      mongoose.Promise = require('es6-promise').Promise;
+      const setupDB = new Promise((resolve, reject) => {
+        mongoose.connect("mongodb://localhost:28017/nekochan-test", resolve);
+      });
+      await setupDB;
+
+      gameUUID = require('uuid').v4();
+      game = await Game.create({
+        users: ['abc123'],
+        uuid: gameUUID,
+        cats: {
+          noProfession: {count: 4},
+          explorer: {count: 2, locations: [{name: 'base', explorerCount: 2}]},
+          fishercat: {count: 1}
+        }
+      });
+    });
+
+    afterEach.async(async () => {
+      mongoose.connection.db.dropDatabase();
+      const disconnect = new Promise((resolve, reject) => {
+        mongoose.disconnect(resolve);
+      })
+      await disconnect;
+      await timeout(1);
+    });
+
+    it.async('assigns the cats from old job to new job', async () => {
+      const updatedGame = await GameApi.assignJob(gameUUID, {number: 2, currentJob: 'noProfession', newJob: 'fishercat'});
+      expect(updatedGame.cats).toEqual(jasmine.objectContaining({
+        noProfession: jasmine.objectContaining({count: 2}),
+        explorer: jasmine.objectContaining({count: 2, locations: [jasmine.objectContaining({name: 'base', explorerCount: 2})]}),
+        fishercat: jasmine.objectContaining({count: 3})
+      }));
+    });
+
+    describe('when old job is explorer', () => {
+      it.async('updates the number of cats at base', async () => {
+        const updatedGame = await GameApi.assignJob(gameUUID, {number: 1, currentJob: 'explorer', newJob: 'fishercat'});
+        expect(updatedGame.cats).toEqual(jasmine.objectContaining({
+          noProfession: jasmine.objectContaining({count: 4}),
+          explorer: jasmine.objectContaining({count: 1, locations: [jasmine.objectContaining({name: 'base', explorerCount: 1})]}),
+          fishercat: jasmine.objectContaining({count: 2})
+        }));
+      });
+    });
+
+    describe('when new job is explorer', () => {
+      it.async('updates the number of cats at base', async () => {
+        const updatedGame = await GameApi.assignJob(gameUUID, {number: 1, currentJob: 'noProfession', newJob: 'explorer'});
+        expect(updatedGame.cats).toEqual(jasmine.objectContaining({
+          noProfession: jasmine.objectContaining({count: 3}),
+          explorer: jasmine.objectContaining({count: 3, locations: [jasmine.objectContaining({name: 'base', explorerCount: 3})]}),
+          fishercat: jasmine.objectContaining({count: 1})
+        }));
+      });
+    });
+
+    describe('when number of cats < 0', () => {
+      it.async('rejects with error', async () => {
+        try {
+          await GameApi.assignJob(gameUUID, {number: -1, currentJob: 'explorer', newJob: 'fishercat'})
+        } catch (e) {
+          expect(e).toEqual(jasmine.any(Error));
+          const updatedGame = await Game.findOne({uuid: gameUUID}).exec();
+          expect(updatedGame.cats).toEqual(jasmine.objectContaining({
+            noProfession: jasmine.objectContaining({count: 4}),
+            explorer: jasmine.objectContaining({count: 2, locations: [jasmine.objectContaining({name: 'base', explorerCount: 2})]}),
+            fishercat: jasmine.objectContaining({count: 1})
+          }));
+        }
+      });
+    });
+  });
 
   describe("#consumeResources", () => {
     let game;
@@ -91,7 +179,7 @@ describe('GameApi', () => {
     beforeEach(() => {
       mockGame = {
         uuid: 'abc123',
-        resources: {salmonJerkey: 22},
+        resources: {salmon: 22},
         cats: {
           explorer: {
             count: 6,
@@ -116,7 +204,7 @@ describe('GameApi', () => {
         expect(Game.findOneAndUpdate).toHaveBeenCalledWith(
           {uuid: 'abc123'},
           {
-            resources: {salmonJerkey: 2},
+            resources: {salmon: 16},
             'cats.explorer.locations': [{name: 'some-location', explorerCount: 3}, {name: 'takashima', explorerCount: 3}]
           },
           {new: true}
@@ -127,7 +215,7 @@ describe('GameApi', () => {
 
     describe('when requirements are not met', () => {
       beforeEach(() => {
-        mockGame = {...mockGame, resources: {salmonJerkey: 12}};
+        mockGame = {...mockGame, resources: {salmon: 5}};
         mockFindQuery.exec.and.returnValue(Promise.resolve(mockGame));
       });
 

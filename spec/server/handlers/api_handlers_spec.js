@@ -5,23 +5,25 @@ describe('Api handlers', () => {
   const Game = require('../../../server/models/game');
   const mongoose = require('mongoose');
   const uuid = require('uuid');
+  const {dbSetup, dbTeardown} = require('../support/db');
+
+  dbSetup();
+  dbTeardown();
 
   let mockRes;
-
-  beforeEach((done) => {
+  beforeEach(() => {
     mockRes = jasmine.createSpyObj('res', ['send', 'sendStatus'])
-    spyOn(uuid, 'v1').and.returnValue('abc123');
-
-    mongoose.Promise = require('es6-promise').Promise;
-    mongoose.connect("mongodb://localhost:28017/nekochan-test", done);
-  });
-
-  afterEach((done) => {
-    mongoose.connection.db.dropDatabase();
-    mongoose.disconnect(done);
+    spyOn(uuid, 'v4').and.returnValue('abc123');
   });
 
   describe('#createGame', () => {
+    const map = { base: { type: "base" }, notBase: { type: "non-base" } };
+
+    beforeEach(() => {
+      const MapConfig = require('../../../server/map_config');
+      spyOn(MapConfig, 'getConfig').and.returnValue(map);
+    });
+
     it.async('creates a game and responds with uuid', async () => {
       MockPromise.uninstall();
       await Handlers.createGame({user: {facebook: {id: 'some-fb-id'}}}, mockRes);
@@ -34,7 +36,8 @@ describe('Api handlers', () => {
         uuid: 'abc123',
         users: ['some-fb-id']
       }));
-      expect(game.cats.explorer.locations).toEqual([jasmine.objectContaining({name: 'base', explorerCount: 0})]);
+      const expectedLocations = [jasmine.objectContaining({name: 'base', explorerCount: 0})];
+      expect(game.cats.explorer.locations).toEqual(expectedLocations);
     });
   });
 
