@@ -3,7 +3,7 @@ function roundTo(num, digits = 1) {
 }
 
 function stringToInt(s) {
-  const i = parseInt(s, 10);
+  const i = +s;
   if (require('lodash.isnan')(i)) {
     return {ok: false};
   }

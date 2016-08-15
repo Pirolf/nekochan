@@ -6,6 +6,9 @@ config/config.js
 
 pids
 
+# vim
+*.swp
+
 # Logs
 logs
 *.log

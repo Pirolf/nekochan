@@ -1,13 +1,26 @@
 const Game = require('../models/game');
 const uuid = require('uuid');
 
+const GameMap = require('../models/game_map');
+const MapConfig = require('../map_config');
+
+function loadMap() {
+  const toPairs = require('lodash.topairs');
+  return toPairs(GameMap.get())
+    .filter(([name, v]) => MapConfig.get()[name].type === 'base')
+    .reduce((memo, [name, v]) => {
+      memo[name] = v;
+      return memo;
+    }, {});
+}
+
 async function createGame(req, res) {
-  const MapConfig = require('../map_config');
   const toPairs = require('lodash.topairs');
   return Game.create({
       uuid: uuid.v4(),
       users: [req.user.facebook.id],
-      'cats.explorer.locations': toPairs(MapConfig.getConfig()).filter(([,{type}]) => type === 'base').map(([k]) => ({name: k, explorerCount: 0})),
+      map: loadMap(),
+      'cats.explorer.locations': toPairs(MapConfig.get()).filter(([,{type}]) => type === 'base').map(([k]) => ({name: k, explorerCount: 0})),
     })
     .then(savedGame => {
       console.log(`Create game: ${savedGame.uuid}`);

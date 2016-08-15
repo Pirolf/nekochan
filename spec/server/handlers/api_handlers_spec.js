@@ -2,26 +2,39 @@ require('../../spec_helper');
 
 describe('Api handlers', () => {
   const Handlers = require('../../../server/handlers/api_handlers');
-  const Game = require('../../../server/models/game');
   const mongoose = require('mongoose');
   const uuid = require('uuid');
   const {dbSetup, dbTeardown} = require('../support/db');
+  let Game;
 
   dbSetup();
   dbTeardown();
 
   let mockRes;
   beforeEach(() => {
+    Game = require('../../../server/models/game');
     mockRes = jasmine.createSpyObj('res', ['send', 'sendStatus'])
     spyOn(uuid, 'v4').and.returnValue('abc123');
   });
 
   describe('#createGame', () => {
-    const map = { base: { type: "base" }, notBase: { type: "non-base" } };
+    const mapConfig = {
+      base: { type: 'base', distance: 3 },
+      notBase: { type: 'non-base', distance: 5 },
+      anotherBase: { type: 'base', distance: 4 }
+    };
+
+    const map = {
+      base: { resources: {banana: {chance: 0.1}}},
+      anotherBase: { resources: {apple: {chance: 0.5}}}
+    }
 
     beforeEach(() => {
       const MapConfig = require('../../../server/map_config');
-      spyOn(MapConfig, 'getConfig').and.returnValue(map);
+      spyOn(MapConfig, 'get').and.returnValue(mapConfig);
+
+      const GameMap = require('../../../server/models/game_map');
+      spyOn(GameMap, 'get').and.returnValue(map);
     });
 
     it.async('creates a game and responds with uuid', async () => {
@@ -36,8 +49,14 @@ describe('Api handlers', () => {
         uuid: 'abc123',
         users: ['some-fb-id']
       }));
-      const expectedLocations = [jasmine.objectContaining({name: 'base', explorerCount: 0})];
+      const expectedLocations = [
+        jasmine.objectContaining({ name: 'base', explorerCount: 0}),
+        jasmine.objectContaining({ name: 'anotherBase', explorerCount: 0})
+      ];
       expect(game.cats.explorer.locations).toEqual(expectedLocations);
+
+      const expectedMap = { base: map.base, anotherBase: map.anotherBase}
+      expect(game.map).toEqual(map);
     });
   });
 

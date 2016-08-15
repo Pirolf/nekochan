@@ -90,14 +90,39 @@ function consumeResources(game) {
   });
 }
 
-function travel(uuid, {src, dest, travellerCount}) {
+function travel(game) {
+  const {cats: {explorer: {attributes: {speed}, locations, trips}}} = game;
+  let completedTrips = [];
+  const locationsMap = locations.reduce((memo, loc) => {
+    memo[loc.name] = loc;
+    return memo;
+  }, {});
+  
+  const updatedTrips = trips.reduce((memo, t) => {
+    if (t.remaining > speed) {
+      memo.push({...t, remaining: t.remaining - speed});
+      return memo; 
+    } 
+    locationsMap[t.destination].explorerCount += t.count;
+    return memo; 
+  }, []);
+  
+  const updatedLocations = Object.values(locationsMap);
+  game.cats.explorer.locations = updatedLocations;
+  game.cats.explorer.trips = updatedTrips;
+ }
+
+function createTrip(uuid, {src, dest, travellerCount}) {
   const {number: count, ok} = stringToInt(travellerCount);
   if (!ok) return Promise.reject(new Error('bad request'));
   //TODO: use mongo query if possible
   return Game.findOne({uuid}).exec().then(game => {
     const MapConfig = require('../map_config');
     const toPairs = require('lodash.topairs');
-    const resourceUpdates = toPairs(MapConfig.getConfig()[dest].requirements).reduce((memo, [k, v]) => {
+    if (!game.arePlacesValid(src, dest)) {
+      return Promise.reject('invalid place')
+    };
+    const resourceUpdates = toPairs(MapConfig.get()[dest].requirements).reduce((memo, [k, v]) => {
       memo[k] = game.resources[k] - v * count;
       return memo;
     }, {});
@@ -105,18 +130,17 @@ function travel(uuid, {src, dest, travellerCount}) {
     if (!requirementsMet) {
       return Promise.resolve({requirementsNotMet: true});
     }
-    const locationUpdates = game.cats.explorer.locations.map(({name, explorerCount}) => {
-      switch (name) {
-        case src:
-          return {name, explorerCount: explorerCount - count};
-        case dest:
-          return {name, explorerCount: explorerCount + count};
-        default:
-          return {name, explorerCount};
-      }
-    });
-    return Game.findOneAndUpdate({uuid}, {resources: resourceUpdates, 'cats.explorer.locations': locationUpdates}, {new: true}).exec();
+
+    const dist = game.distance(src, dest);
+    const trip = {count: travellerCount, origin: src, destination: dest, remaining: dist};
+
+    return Game.findOneAndUpdate(
+      {uuid, 'cats.explorer.locations.name': src},
+      { resources: resourceUpdates, $push: { 'cats.explorer.trips': trip }, $inc: {'cats.explorer.locations.$.explorerCount': -travellerCount } },
+      {new: true}
+    ).exec();
   }, err => {
+    console.log(e);
     return Promise.reject(err);
   });
 }
@@ -132,6 +156,7 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
 
   return Game.findOne({uuid: gameUUID, [currentJobKey]: { $gte: number }}).exec()
   .then((game) => {
+    //TODO: use mongo operators instead of save
     game.cats[currentJob].count -= count;
     game.cats[newJob].count += count;
     if (currentJob === 'explorer') {
@@ -155,6 +180,7 @@ const GameApi = {
   consumeResources,
   createCats,
   fish,
+  createTrip,
   travel
 };
 

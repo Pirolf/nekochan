@@ -13,6 +13,7 @@ async function update(id) {
     baseQuery.exec((err, game) => {
       GameApi.fish(game);
       GameApi.consumeResources(game);
+      GameApi.travel(game);
       game.save((err, savedGame) => {
         if (err) {
           console.log(err);

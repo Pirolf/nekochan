@@ -1,3 +1,5 @@
+require('../../spec_helper');
+
 describe('GameApi', () => {
   const GameApi = require('../../../server/api/game_api');
   const CatsFactory = require('../../../server/factories/cats_factory');
@@ -173,6 +175,68 @@ describe('GameApi', () => {
   });
 
   describe('#travel', () => {
+    let Game, mockGame;
+    beforeEach(() => {
+      Game = require('../../../server/models/game');
+      mockGame = {
+        uuid: 'abc123',
+        cats: {
+          explorer: {
+            attributes: {speed: 50},
+            trips: [{count: 1, origin: 'some-location', destination: 'takashima', remaining: 350}],
+            locations: [{name: 'takashima', explorerCount: 2}]
+          }
+        }
+      };
+    });
+
+    describe('when trip has not ended', () => {
+      it('subtract remaining trip', () => {
+        GameApi.travel(mockGame);
+        expect(mockGame).toEqual({
+          uuid: 'abc123',
+          cats: {
+            explorer: {
+              attributes: {speed: 50},
+              trips: [{count: 1, origin: 'some-location', destination: 'takashima', remaining: 300}],
+              locations: [{name: 'takashima', explorerCount: 2}]
+            }
+          }
+        });
+      });
+    });
+
+    describe('when trip will end', () => {
+      beforeEach(() => {
+        mockGame = {
+          ...mockGame,
+          cats: {
+            explorer: {
+              attributes: {speed: 50},
+              trips: [{count: 1, origin: 'some-location', destination: 'takashima', remaining: 50}],
+              locations: [{name: 'takashima', explorerCount: 2}]
+            }
+          }
+        };
+      });
+
+      it('removes the trip and update locations', () => {
+        GameApi.travel(mockGame);
+        expect(mockGame).toEqual({
+          uuid: 'abc123',
+          cats: {
+            explorer: {
+              attributes: {speed: 50},
+              trips: [],
+              locations: [{name: 'takashima', explorerCount: 3}]
+            }
+          }
+        });
+      });
+    });
+  });
+  
+  describe('#createTrip', () => {
     const Game = require('../../../server/models/game');
     let mockGame, mockFindQuery, mockFindOneAndUpdateQuery;
 
@@ -183,15 +247,38 @@ describe('GameApi', () => {
         cats: {
           explorer: {
             count: 6,
+            trips: [{count: 1, origin: 'some-location', destination: 'takashima', remaining: 350}],
             locations: [{name: 'some-location', explorerCount: 5}, {name: 'takashima', explorerCount: 1}]
           }
+        },
+        map: {
+          'some-location': { coords: [4, 6] },
+          'takashima': { coords: [1, 2] }
         }
       };
+      mockGame.arePlacesValid = jasmine.createSpy('arePlacesValid').and.returnValue(true);
+      mockGame.distance = jasmine.createSpy('distance').and.returnValue(5);
       mockFindQuery = jasmine.createSpyObj('query', ['exec']);
       mockFindOneAndUpdateQuery = jasmine.createSpyObj('query', ['exec']);
       mockFindOneAndUpdateQuery.exec.and.returnValue(Promise.resolve('findOneAndUpdateResolve'));
       spyOn(Game, 'findOne').and.returnValue(mockFindQuery);
       spyOn(Game, 'findOneAndUpdate').and.returnValue(mockFindOneAndUpdateQuery);
+    });
+
+    describe('when either src or dest is not in the map', () => {
+      beforeEach(() => {
+        mockGame.arePlacesValid.and.returnValue(false);
+        mockFindQuery.exec.and.returnValue(Promise.resolve(mockGame));
+      });
+
+      it('reject and do nothing', (done) => {
+        const result = GameApi.createTrip('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
+        result.catch((e) => {
+          expect(Game.findOneAndUpdate).not.toHaveBeenCalled();
+          expect(e).toBe('invalid place');
+          done();
+        });
+      });
     });
 
     describe('when requirements are met', () => {
@@ -200,12 +287,15 @@ describe('GameApi', () => {
       });
 
       it.async('send travellers to destination', async () => {
-        const result = await GameApi.travel('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
+        const result = await GameApi.createTrip('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
         expect(Game.findOneAndUpdate).toHaveBeenCalledWith(
-          {uuid: 'abc123'},
+          {uuid: 'abc123', 'cats.explorer.locations.name': 'some-location'},
           {
             resources: {salmon: 16},
-            'cats.explorer.locations': [{name: 'some-location', explorerCount: 3}, {name: 'takashima', explorerCount: 3}]
+            $push: {
+              'cats.explorer.trips': jasmine.objectContaining({count: 2, origin: 'some-location', destination: 'takashima', remaining: 5})
+            },
+            $inc: {'cats.explorer.locations.$.explorerCount': -2}
           },
           {new: true}
         );
@@ -220,7 +310,7 @@ describe('GameApi', () => {
       });
 
       it.async('does nothing', async () => {
-        const result = await GameApi.travel('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
+        const result = await GameApi.createTrip('abc123', {src: 'some-location', dest: 'takashima', travellerCount: 2});
         expect(Game.findOneAndUpdate).not.toHaveBeenCalled();
         expect(result).toEqual({requirementsNotMet: true});
       });

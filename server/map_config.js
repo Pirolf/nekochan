@@ -12,7 +12,7 @@ const mapConfig = {
 };
 
 module.exports = {
-  getConfig() {
+  get() {
     return mapConfig;
   }
 };
