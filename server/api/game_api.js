@@ -1,4 +1,5 @@
 const Game = require('../models/game');
+const Trip = require('../models/trip');
 const CatsFactory = require('../factories/cats_factory');
 const {stringToInt} = require('../helpers/math_helper');
 
@@ -97,16 +98,18 @@ function travel(game) {
     memo[loc.name] = loc;
     return memo;
   }, {});
-  
+
   const updatedTrips = trips.reduce((memo, t) => {
     if (t.remaining > speed) {
       memo.push({...t, remaining: t.remaining - speed});
-      return memo; 
-    } 
+      return memo;
+    }
+    console.log(locationsMap);
+    console.log('dest', t.destination)
     locationsMap[t.destination].explorerCount += t.count;
-    return memo; 
+    return memo;
   }, []);
-  
+
   const updatedLocations = Object.values(locationsMap);
   game.cats.explorer.locations = updatedLocations;
   game.cats.explorer.trips = updatedTrips;
@@ -116,27 +119,39 @@ function createTrip(uuid, {src, dest, travellerCount}) {
   const {number: count, ok} = stringToInt(travellerCount);
   if (!ok) return Promise.reject(new Error('bad request'));
   //TODO: use mongo query if possible
+  console.log('createTrip')
+
   return Game.findOne({uuid}).exec().then(game => {
+    console.log('here')
     const MapConfig = require('../map_config');
     const toPairs = require('lodash.topairs');
     if (!game.arePlacesValid(src, dest)) {
+      conosle.log(src, dest, 'not valid')
       return Promise.reject('invalid place')
     };
+    console.log('here2')
     const resourceUpdates = toPairs(MapConfig.get()[dest].requirements).reduce((memo, [k, v]) => {
       memo[k] = game.resources[k] - v * count;
       return memo;
     }, {});
+    console.log('here3')
     const requirementsMet = Object.values(resourceUpdates).every(v => v >= 0);
     if (!requirementsMet) {
+      console.log('requirements not met');
       return Promise.resolve({requirementsNotMet: true});
     }
-
+    console.log('here4')
     const dist = game.distance(src, dest);
-    const trip = {count: travellerCount, origin: src, destination: dest, remaining: dist};
-
+    console.log(dist)
+    const trip = {count: +travellerCount, origin: src, destination: dest, remaining: dist};
+    console.log('update trip', trip)
     return Game.findOneAndUpdate(
-      {uuid, 'cats.explorer.locations.name': src},
-      { resources: resourceUpdates, $push: { 'cats.explorer.trips': trip }, $inc: {'cats.explorer.locations.$.explorerCount': -travellerCount } },
+      {uuid},
+      {
+        resources: resourceUpdates,
+        $push: { 'cats.explorer.trips': trip },
+        //$inc: {'cats.explorer.locations.$': {explorerCount: -travellerCount }}
+      },
       {new: true}
     ).exec();
   }, err => {
@@ -162,12 +177,12 @@ function assignJob(gameUUID, {number, currentJob, newJob}) {
     if (currentJob === 'explorer') {
       const oldLocations = game.cats[currentJob].locations;
       const base = oldLocations.find(l => l.name === 'base');
-      game.cats[currentJob].locations = oldLocations.filter(l => l.name !== 'base').concat([{name: base.name, explorerCount: base.explorerCount - number}]);
+      game.cats[currentJob].locations = oldLocations.filter(l => l.name !== 'base').concat([{name: base.name, explorerCount: base.explorerCount - count}]);
     }
     if (newJob === 'explorer') {
       const oldLocations = game.cats[newJob].locations;
       const base = oldLocations.find(l => l.name === 'base');
-      game.cats[newJob].locations = oldLocations.filter(l => l.name !== 'base').concat({name: base.name, explorerCount: base.explorerCount + number});
+      game.cats[newJob].locations = oldLocations.filter(l => l.name !== 'base').concat({name: base.name, explorerCount: base.explorerCount + count});
     }
     return game.save().then(g => Promise.resolve(g), e => Promise.reject(e));
   }, (err) => {

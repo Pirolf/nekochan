@@ -15,7 +15,7 @@ const GameSchema = mongoose.Schema({
       explorer: {
         count: numberType, //TODO: remove.
         attributes: {
-          speed: { type: Number, default: 50, min: 0 }
+          speed: { type: Number, default: 10, min: 0 }
         },
         trips: [TripSchema],
         locations: [LocationSchema]
@@ -34,15 +34,18 @@ const GameSchema = mongoose.Schema({
 });
 
 GameSchema.methods.distance = function(src, dest) {
-  const coords1 = this.map[src].coords;
-  const coords2 = this.map[dest].coords;
+  const mapConfig = require('../map_config').get();
+  const coords1 = mapConfig[src].coords;
+  const coords2 = mapConfig[dest].coords;
   return Math.sqrt(coords2.reduce((memo, v, i) => {
     return memo + Math.pow(v - coords1[i], 2)
   }, 0));
 };
 
 GameSchema.methods.arePlacesValid = function(...places) {
-  return places.every(p => this.map[p]);
+  console.log(places)
+  const result = places.every(p => console.log(this.map[p]) || !!this.map[p]);
+  return result;
 };
 
 module.exports = mongoose.model('Game', GameSchema);

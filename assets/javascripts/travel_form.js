@@ -6,7 +6,7 @@ const SocketClient = require('./socket_client');
 const submit = (e) => {
   e.preventDefault();
   const formData = serialize(e.target, {hash: true});
-  SocketClient.travel(formData);
+  SocketClient.createTrip(formData);
 }
 
 function generateSources() {
@@ -15,8 +15,8 @@ function generateSources() {
 }
 
 function generateDestinations() {
-  const {map: {places: dests}} = this.props;
-  return Object.keys(dests).map(k => <option key={k} value={k}>{k}</option>);
+  const {map} = this.props;
+  return Object.keys(map).map(k => <option key={k} value={k}>{k}</option>);
 }
 
 class TravelForm extends React.Component {
