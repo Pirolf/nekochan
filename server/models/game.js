@@ -34,6 +34,7 @@ const GameSchema = mongoose.Schema({
 });
 
 GameSchema.methods.distance = function(src, dest) {
+  if (!this.arePlacesValid(src, dest)) return -1;
   const mapConfig = require('../map_config').get();
   const coords1 = mapConfig[src].coords;
   const coords2 = mapConfig[dest].coords;
@@ -43,8 +44,7 @@ GameSchema.methods.distance = function(src, dest) {
 };
 
 GameSchema.methods.arePlacesValid = function(...places) {
-  console.log(places)
-  const result = places.every(p => console.log(this.map[p]) || !!this.map[p]);
+  const result = places.every(p => this.map[p]);
   return result;
 };
 

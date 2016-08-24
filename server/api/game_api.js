@@ -1,5 +1,4 @@
 const Game = require('../models/game');
-const Trip = require('../models/trip');
 const CatsFactory = require('../factories/cats_factory');
 const {stringToInt} = require('../helpers/math_helper');
 
@@ -94,6 +93,7 @@ function consumeResources(game) {
 function travel(game) {
   const {cats: {explorer: {attributes: {speed}, locations, trips}}} = game;
   let completedTrips = [];
+
   const locationsMap = locations.reduce((memo, loc) => {
     memo[loc.name] = loc;
     return memo;
@@ -101,11 +101,11 @@ function travel(game) {
 
   const updatedTrips = trips.reduce((memo, t) => {
     if (t.remaining > speed) {
-      memo.push({...t, remaining: t.remaining - speed});
+      t.remaining -= speed;
+      memo.push(t);
       return memo;
     }
-    console.log(locationsMap);
-    console.log('dest', t.destination)
+
     locationsMap[t.destination].explorerCount += t.count;
     return memo;
   }, []);
@@ -119,38 +119,34 @@ function createTrip(uuid, {src, dest, travellerCount}) {
   const {number: count, ok} = stringToInt(travellerCount);
   if (!ok) return Promise.reject(new Error('bad request'));
   //TODO: use mongo query if possible
-  console.log('createTrip')
 
   return Game.findOne({uuid}).exec().then(game => {
-    console.log('here')
     const MapConfig = require('../map_config');
     const toPairs = require('lodash.topairs');
     if (!game.arePlacesValid(src, dest)) {
-      conosle.log(src, dest, 'not valid')
+      console.log(src, dest, 'not valid')
       return Promise.reject('invalid place')
     };
-    console.log('here2')
+
     const resourceUpdates = toPairs(MapConfig.get()[dest].requirements).reduce((memo, [k, v]) => {
       memo[k] = game.resources[k] - v * count;
       return memo;
     }, {});
-    console.log('here3')
+
     const requirementsMet = Object.values(resourceUpdates).every(v => v >= 0);
     if (!requirementsMet) {
       console.log('requirements not met');
       return Promise.resolve({requirementsNotMet: true});
     }
-    console.log('here4')
+
     const dist = game.distance(src, dest);
-    console.log(dist)
     const trip = {count: +travellerCount, origin: src, destination: dest, remaining: dist};
-    console.log('update trip', trip)
     return Game.findOneAndUpdate(
-      {uuid},
+      {uuid, 'cats.explorer.locations.name': src},
       {
         resources: resourceUpdates,
         $push: { 'cats.explorer.trips': trip },
-        //$inc: {'cats.explorer.locations.$': {explorerCount: -travellerCount }}
+        $inc: {'cats.explorer.locations.$.explorerCount': -travellerCount}
       },
       {new: true}
     ).exec();

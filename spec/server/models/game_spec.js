@@ -21,14 +21,22 @@ describe('Game model', () => {
   });
 
   describe('#distance', () => {
+    let placeValidSpy;
     beforeEach(() => {
-      game = new Game({
-        map: { place1: { coords: [1, 2]}, place2: { coords: [4, 6]} }
-      });
+      const MapConfig = require('../../../server/map_config');
+      spyOn(MapConfig, 'get').and.returnValue({ place1: { coords: [1, 2]}, place2: { coords: [4, 6]} });
+      placeValidSpy = spyOn(Game.prototype, 'arePlacesValid');
+      game = new Game();
     });
-    
+
     it('returns distance between two places', () => {
+      placeValidSpy.and.returnValue(true);
       expect(game.distance('place1', 'place2')).toBe(5);
+    });
+
+    it('returns < 0 when either place is invalid', () => {
+      placeValidSpy.and.returnValue(false);
+      expect(game.distance('place1', 'place2')).toBeLessThan(0);
     });
   });
 });

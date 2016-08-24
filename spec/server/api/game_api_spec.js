@@ -235,7 +235,7 @@ describe('GameApi', () => {
       });
     });
   });
-  
+
   describe('#createTrip', () => {
     const Game = require('../../../server/models/game');
     let mockGame, mockFindQuery, mockFindOneAndUpdateQuery;
@@ -243,7 +243,7 @@ describe('GameApi', () => {
     beforeEach(() => {
       mockGame = {
         uuid: 'abc123',
-        resources: {salmon: 22},
+        resources: {salmon: 6},
         cats: {
           explorer: {
             count: 6,
@@ -291,7 +291,7 @@ describe('GameApi', () => {
         expect(Game.findOneAndUpdate).toHaveBeenCalledWith(
           {uuid: 'abc123', 'cats.explorer.locations.name': 'some-location'},
           {
-            resources: {salmon: 16},
+            resources: {salmon: 0},
             $push: {
               'cats.explorer.trips': jasmine.objectContaining({count: 2, origin: 'some-location', destination: 'takashima', remaining: 5})
             },

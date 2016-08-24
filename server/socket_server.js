@@ -10,7 +10,7 @@ function isAuthorized({id, token}) {
 }
 
 function socketEvent(name, socket, gameUUID) {
-  return socket.on(name, (data) => {
+  socket.on(name, (data) => {
     const camelCase = require('camelcase');
     const result = GameApi[camelCase(name)](gameUUID, data);
     result.then((game) => {
@@ -49,9 +49,7 @@ module.exports = function(server) {
 					});
 				}
         //game
-        socketEvent('assign-job', socket, gameUUID);
-        socketEvent('create-cats', socket, gameUUID);
-        socketEvent('create-trip', socket, gameUUID);
+        ['assign-job', 'create-cats', 'create-trip'].forEach(f => socketEvent(f, socket, gameUUID));
       });
 		});
 
