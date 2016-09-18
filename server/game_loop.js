@@ -42,16 +42,16 @@ const GameLoop = {
 				return;
 			}
 
-			console.log("game started before", gameStates)
+			console.log('game started before', gameStates);
 
 			const key = `${gameUUID}::${socketID}`;
 			gameStates[key] = true;
-			console.log("game started", gameStates)
+			console.log('game started', gameStates);
 
 			while (gameStates[key]) {
 				await run(game._id, callback);
 			}
-			console.log("game really stopped")
+			console.log('game really stopped');
 		});
 	},
 
@@ -62,7 +62,7 @@ const GameLoop = {
 				return;
 			}
 
-			const key = `${gameUUID}::${socketID}`
+			const key = `${gameUUID}::${socketID}`;
 			delete gameStates[key];
 		});
 	}

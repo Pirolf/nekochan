@@ -36,4 +36,4 @@ async function getGame(req, res) {
 module.exports = {
   createGame,
   getGame
-}
+};

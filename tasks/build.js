@@ -17,7 +17,7 @@ gulp.task('buildServer', (done) => {
 });
 
 gulp.task('build', (done) => {
-  runSequence('clean', 'buildClient', 'buildServer', done)
+  runSequence('clean', 'buildClient', 'buildServer', done);
 });
 
 function buildClient() {

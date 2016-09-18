@@ -5,8 +5,7 @@ const User = require('./models/user');
 let rooms = {};
 
 function isAuthorized({id, token}) {
-  const result = User.findOne({'facebook.id': id, 'facebook.token': token});
-  return result.exec().then(() => Promise.resolve(true), () => Promise.resolve(false));
+  return User.findOne({'facebook.id': id, 'facebook.token': token}).exec().then(() => Promise.resolve(true), () => Promise.resolve(false));
 }
 
 function socketEvent(name, socket, gameUUID) {
@@ -16,7 +15,7 @@ function socketEvent(name, socket, gameUUID) {
     result.then((game) => {
       io.to(gameUUID).emit('gameUpdate', game);
     }, (err) => {
-      io.to(gameUUID).emit('errors', {"travel": err.message});
+      io.to(gameUUID).emit('errors', {[name]: err.message});
     });
   });
 };
@@ -42,7 +41,7 @@ module.exports = function(server) {
 					timestamp: Date.now()
 				});
 
-				console.log("playerCount: ", playerCount)
+				console.log('playerCount: ', playerCount);
 				if (playerCount === 1) {
 					GameLoop.start(gameUUID, socket.id, (updatedGame) => {
 						io.to(gameUUID).emit('gameUpdate', updatedGame);
@@ -58,11 +57,11 @@ module.exports = function(server) {
 			const playerCount = (io.nsps['/'].adapter.rooms[gameUUID] || []) .length;
 			if (gameUUID) {
 				delete rooms[socket.id];
-				console.log("saving ", gameUUID);
+				console.log('saving ', gameUUID);
 			}
 
 			if (!playerCount) {
-				console.log("stopping");
+				console.log('stopping');
 				GameLoop.stop(gameUUID, socket.id);
 			}
 			console.log('a user disconnected');

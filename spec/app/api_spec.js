@@ -7,10 +7,10 @@ describe('Api', () => {
   const ApiHelper = require('../../assets/javascripts/helpers/api_helper');
 
   describe('#createGame', () => {
-    let postSpy, defaultsSpy, redirectSpy, rejectSpy;
+    let redirectSpy, rejectSpy;
     beforeEach(() => {
-      defaultsSpy = spyOn(request, 'defaults').and.returnValue(request);
-      postSpy = spyOn(request, 'post').and.callFake((opts, cb) => {
+      spyOn(request, 'defaults').and.returnValue(request);
+      spyOn(request, 'post').and.callFake((opts, cb) => {
         cb(null, {statusCode: 200}, JSON.stringify({uuid: 'abc123'}));
       });
       redirectSpy = spyOn(ApiHelper, 'redirect');

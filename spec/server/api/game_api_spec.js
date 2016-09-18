@@ -22,7 +22,7 @@ describe('GameApi', () => {
 
       mongoose.Promise = require('es6-promise').Promise;
       const setupDB = new Promise((resolve, reject) => {
-        mongoose.connect("mongodb://localhost:28017/nekochan-test", resolve);
+        mongoose.connect('mongodb://localhost:28017/nekochan-test', resolve);
       });
       await setupDB;
 
@@ -42,7 +42,7 @@ describe('GameApi', () => {
       mongoose.connection.db.dropDatabase();
       const disconnect = new Promise((resolve, reject) => {
         mongoose.disconnect(resolve);
-      })
+      });
       await disconnect;
       await timeout(1);
     });
@@ -81,7 +81,7 @@ describe('GameApi', () => {
     describe('when number of cats < 0', () => {
       it.async('rejects with error', async () => {
         try {
-          await GameApi.assignJob(gameUUID, {number: -1, currentJob: 'explorer', newJob: 'fishercat'})
+          await GameApi.assignJob(gameUUID, {number: -1, currentJob: 'explorer', newJob: 'fishercat'});
         } catch (e) {
           expect(e).toEqual(jasmine.any(Error));
           const updatedGame = await Game.findOne({uuid: gameUUID}).exec();
@@ -95,7 +95,7 @@ describe('GameApi', () => {
     });
   });
 
-  describe("#consumeResources", () => {
+  describe('#consumeResources', () => {
     let game;
     beforeEach(() => {
       game = {
@@ -112,12 +112,12 @@ describe('GameApi', () => {
       };
 
       spyOn(CatsFactory, 'makeCats').and.callThrough();
-      spyOn(IdleCat.prototype, 'eat').and.returnValue({catfish: 3.0, salmon: 1.8})
+      spyOn(IdleCat.prototype, 'eat').and.returnValue({catfish: 3.0, salmon: 1.8});
       spyOn(FisherCat.prototype, 'eat').and.returnValue({catfish: 2.5, salmon: 1.4});
       spyOn(ExplorerCat.prototype, 'eat').and.returnValue({catfish: 1.3, salmon: 0.6});
     });
 
-    it("updates resources and cat counts", () => {
+    it('updates resources and cat counts', () => {
       GameApi.consumeResources(game);
 
       expect(CatsFactory.makeCats).toHaveBeenCalled();
@@ -161,7 +161,7 @@ describe('GameApi', () => {
       fishSpy.and.returnValue({salmon: 7, catfish: 2});
     });
 
-    it("updates fish and cat count", () => {
+    it('updates fish and cat count', () => {
       GameApi.fish(game);
       expect(CatsFactory.makeFishercat).toHaveBeenCalledWith(2);
       expect(fishSpy).toHaveBeenCalledWith({salmon: 5, catfish: 1});

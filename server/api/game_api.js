@@ -7,12 +7,12 @@ const catProfessions = ['noProfession', 'explorer'];
 function createCats(uuid, {catsToCreate}) {
   Game.findOne({uuid}, (err, game) => {
     if (err) {
-      reject(new Error("game not found"));
+      reject(new Error('game not found'));
       return;
     }
     const {resources: {catfish}} = game;
     if (catfish < 10 * catsToCreate) {
-      reject(new Error("not enough cat fish"));
+      reject(new Error('not enough cat fish'));
       return;
     }
 
@@ -30,17 +30,17 @@ function createCats(uuid, {catsToCreate}) {
         }
         resolve(updatedGame);
       }
-    )
+    );
   });
   return new Promise((resolve, reject) => {
       Game.findOne({uuid}, (err, game) => {
         if (err) {
-          reject(new Error("game not found"));
+          reject(new Error('game not found'));
           return;
         }
         const {resources: {catfish}} = game;
         if (catfish < 10 * catsToCreate) {
-          reject(new Error("not enough cat fish"));
+          reject(new Error('not enough cat fish'));
           return;
         }
 
@@ -58,7 +58,7 @@ function createCats(uuid, {catsToCreate}) {
             }
             resolve(updatedGame);
           }
-        )
+        );
       });
   });
 }
@@ -116,16 +116,15 @@ function travel(game) {
  }
 
 function createTrip(uuid, {src, dest, travellerCount}) {
-  const {number: count, ok} = stringToInt(travellerCount);
-  if (!ok) return Promise.reject(new Error('bad request'));
+  const count = +travellerCount;
   //TODO: use mongo query if possible
 
   return Game.findOne({uuid}).exec().then(game => {
     const MapConfig = require('../map_config');
     const toPairs = require('lodash.topairs');
     if (!game.arePlacesValid(src, dest)) {
-      console.log(src, dest, 'not valid')
-      return Promise.reject('invalid place')
+      console.log(src, dest, 'not valid');
+      return Promise.reject('invalid place');
     };
 
     const resourceUpdates = toPairs(MapConfig.get()[dest].requirements).reduce((memo, [k, v]) => {
@@ -134,13 +133,9 @@ function createTrip(uuid, {src, dest, travellerCount}) {
     }, {});
 
     const requirementsMet = Object.values(resourceUpdates).every(v => v >= 0);
-    if (!requirementsMet) {
-      console.log('requirements not met');
-      return Promise.resolve({requirementsNotMet: true});
-    }
+    if (!requirementsMet) return Promise.resolve({requirementsNotMet: true});
 
-    const dist = game.distance(src, dest);
-    const trip = {count: +travellerCount, origin: src, destination: dest, remaining: dist};
+    const trip = {count: +travellerCount, origin: src, destination: dest, remaining: game.distance(src, dest)};
     return Game.findOneAndUpdate(
       {uuid, 'cats.explorer.locations.name': src},
       {

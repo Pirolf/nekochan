@@ -4,7 +4,7 @@ module.exports = {
   dbSetup: () => {
     beforeEach((done) => {
       mongoose.Promise = require('es6-promise').Promise;
-      mongoose.connect("mongodb://localhost:28017/nekochan-test", done);
+      mongoose.connect('mongodb://localhost:28017/nekochan-test', done);
     });
   },
   dbTeardown: () => {
@@ -13,4 +13,4 @@ module.exports = {
       mongoose.disconnect(done);
     });
   }
-}
+};

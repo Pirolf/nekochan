@@ -23,18 +23,18 @@ const startMongo = (cb) => {
 
   mongod.stdout.on('data', (stdout) => {
     console.log(`stdout: ${stdout}`);
-  })
+  });
   mongod.stderr.on('data', (stderr) => {
     console.log(`stderr: ${stderr}`);
-  })
+  });
 
   mongod.on('close', cb);
-}
+};
 
 const killMongo = () => {
   const pid = fs.readFileSync(pidfile);
   process.kill(pid);
-}
+};
 
 module.exports = {
   startMongo,

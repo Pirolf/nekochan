@@ -26,6 +26,7 @@ const GameSchema = mongoose.Schema({
       starved: numberType,
     },
     map: {},
+    tech: {},
     resources: {
       catfish: { type: Number, default: 10, min: 0 },
     	salmon: numberType,
@@ -39,7 +40,7 @@ GameSchema.methods.distance = function(src, dest) {
   const coords1 = mapConfig[src].coords;
   const coords2 = mapConfig[dest].coords;
   return Math.sqrt(coords2.reduce((memo, v, i) => {
-    return memo + Math.pow(v - coords1[i], 2)
+    return memo + Math.pow(v - coords1[i], 2);
   }, 0));
 };
 

@@ -1,12 +1,12 @@
 const mapConfig = {
   base: {
     coords: [0, 0],
-    type: "base",
+    type: 'base',
     requirements: {}
   },
   takashima: {
     coords: [15, 30],
-    type: "base",
+    type: 'base',
     requirements: {salmon: 3}
   }
 };

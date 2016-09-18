@@ -13,7 +13,7 @@ describe('Api handlers', () => {
   let mockRes;
   beforeEach(() => {
     Game = require('../../../server/models/game');
-    mockRes = jasmine.createSpyObj('res', ['send', 'sendStatus'])
+    mockRes = jasmine.createSpyObj('res', ['send', 'sendStatus']);
     spyOn(uuid, 'v4').and.returnValue('abc123');
   });
 
@@ -27,7 +27,7 @@ describe('Api handlers', () => {
     const map = {
       base: { resources: {banana: {chance: 0.1}}},
       anotherBase: { resources: {apple: {chance: 0.5}}}
-    }
+    };
 
     beforeEach(() => {
       const MapConfig = require('../../../server/map_config');
@@ -44,7 +44,7 @@ describe('Api handlers', () => {
 
       mockRes.send.calls.reset();
       await Handlers.getGame({params: {uuid: 'abc123'}}, mockRes);
-      const game = mockRes.send.calls.mostRecent().args[0]
+      const game = mockRes.send.calls.mostRecent().args[0];
       expect(game).toEqual(jasmine.objectContaining({
         uuid: 'abc123',
         users: ['some-fb-id']
@@ -55,7 +55,7 @@ describe('Api handlers', () => {
       ];
       expect(game.cats.explorer.locations).toEqual(expectedLocations);
 
-      const expectedMap = { base: map.base, anotherBase: map.anotherBase}
+      const expectedMap = { base: map.base, anotherBase: map.anotherBase};
       expect(game.map).toEqual(map);
     });
   });

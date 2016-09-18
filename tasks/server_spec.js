@@ -26,10 +26,10 @@ function specServer(done){
       stream.pipe(env.restore());
 
       stream.on('end', () => {
-        console.log("killing mongo")
+        console.log('killing mongo');
         helper.killMongo();
         resolve(stream);
       });
     });
-  })
+  });
 }

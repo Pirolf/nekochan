@@ -8,4 +8,4 @@ process.on('SIGUSR2', function() {
     cluster.reload();
 });
 
-console.log("spawned cluster, kill -s SIGUSR2", process.pid, "to reload");
+console.log('spawned cluster, kill -s SIGUSR2', process.pid, 'to reload');

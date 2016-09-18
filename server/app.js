@@ -18,7 +18,7 @@ module.exports = function() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const viewPath = path.join(rootPath, "views");
+  const viewPath = path.join(rootPath, 'views');
 
   app.get('/', isLoggedIn, (req, res) => {
     	res.sendFile(path.join(viewPath, 'index.html'));
@@ -51,7 +51,7 @@ module.exports = function() {
   		return;
   	}
   	const {facebook: {name, id, token}} = req.user;
-  	res.send({name, id, token, auth_method: "facebook"});
+  	res.send({name, id, token, auth_method: 'facebook'});
   });
 
   /*eslint-disable no-console */
@@ -59,7 +59,7 @@ module.exports = function() {
   	const Game = require('./models/game');
   	Game.findOne({uuid: req.params.uuid}, (err, game) => {
   		const userId = req.user.facebook.id;
-  		console.log(game.users)
+  		console.log(game.users);
   		const includes = require('lodash.includes');
   		if (!includes(game.users, userId)) {
   			game.users.push(userId);
@@ -79,7 +79,7 @@ module.exports = function() {
 
   app.get('/test', (req, res) => {
       console.log('test');
-      res.send("miao")
+      res.send('miao');
   });
 
   function isLoggedIn(req, res, next) {
@@ -88,5 +88,5 @@ module.exports = function() {
   }
 
   return app;
-}
+};
 /*eslint-enable no-console */

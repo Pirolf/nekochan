@@ -3,7 +3,6 @@ const {jasmine, plumber, processEnv} = require('gulp-load-plugins')();
 const runSequence = require('run-sequence');
 const webpack = require('webpack-stream');
 const testConfig = require('../config/webpack.test.config');
-const fs = require('fs');
 const pm2 = require('pm2');
 const helper = require('./helper');
 
@@ -19,7 +18,7 @@ function integration() {
     helper.startMongo((code) => {
       console.log('mongod exited with ' + code);
       const restoreEnv = process.env;
-      process.env = { ...process.env, NODE_ENV: 'test', PORT: 4000 }
+      process.env = { ...process.env, NODE_ENV: 'test', PORT: 4000 };
 
       pm2.connect((err) => {
         if (err) {
@@ -36,10 +35,8 @@ function integration() {
         }, (err, apps) => {
           pm2.disconnect();
           process.env = restoreEnv;
-          if (err) {
-            reject(err);
-            return;
-          }
+          if (err) return reject(err);
+
           setTimeout(() => {
             const env = processEnv({NODE_ENV: 'test', PORT: 4000});
             const stream = gulp.src(['spec/integration/*.js'])
@@ -47,12 +44,15 @@ function integration() {
               .pipe(webpack(testConfig))
               .pipe(gulp.dest('specs-build'))
               .pipe(env)
-              .pipe(jasmine({includeStackTrace: true}))
+              .pipe(jasmine({includeStackTrace: true}));
             stream.pipe(env.restore());
 
             stream.on('end', () => {
               resolve(stream);
-            })
+            });
+            stream.on('error', (error) => {
+              reject({error})
+            });
           }, 2000);
         });
       });
@@ -74,6 +74,6 @@ function cleanup() {
         console.log(err);
         return;
       }
-    })
-  })
+    });
+  });
 }
