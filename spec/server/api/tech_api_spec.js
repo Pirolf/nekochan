@@ -54,7 +54,9 @@ describe('TechApi', () => {
         spyOn(TechTree, 'get').and.returnValue({
           fishing: {
             resources: {
-              salmon: 5
+              research: {
+                salmon: 5
+              }
             }
           }
         });
@@ -82,7 +84,9 @@ describe('TechApi', () => {
         beforeEach.async(async () => {
           spyOn(TechTree, 'get').and.returnValue({
             fishing: {
-              resources: {salmon: 5},
+              resources: {
+                research: {salmon: 5}
+              },
               prereqs: {
                 somePreReq: {level: 3}
               }
@@ -108,28 +112,112 @@ describe('TechApi', () => {
           }));
         });
       });
-      
-      describe('when upgrading a tech', () => {
-        beforeEach.async(async () => {
-          spyOn(TechTree, 'get').and.returnValue({
-            fishing: {
-              resources: {salmon: 5},
-              prereqs: {
-                somePreReq: {level: 3}
+    });
+  });
+
+  describe('#upgrade', () => {
+    describe('when tech is no longer upgradable', () => {
+      beforeEach.async(async () => {
+        spyOn(TechTree, 'get').and.returnValue({
+          fishing: {
+            resources: {
+              research: {
+                wood: 10
+              },
+              upgrade: {
+                2: {wood: 30}
               }
             }
-          });
-
-          game = await Game.create({
-            users: ['abc123'],
-            uuid: gameUUID,
-            resources: {salmon: 6},
-            tech: {somePreReq: {level:4}}
-          });
+          }
         });
-				
-				it.async('upgrades the tech by 1 level', async () => {
-				});
+
+        game = await Game.create({
+          users: ['abc123'],
+          uuid: gameUUID,
+          resources: {wood: 16, salmon: 3, catfish: 5},
+          tech: {fishing: {level: 2}}
+        });
+      });
+
+      it.async('rejects', async () => {
+        let err;
+        try { 
+          await subject.upgrade(gameUUID, {name: 'fishing'});
+        } catch (e) {
+          err = e; 
+        }
+        expect(err).toEqual('not upgradable');
+      });
+    });
+
+    describe('when resources are not met', () => {
+      beforeEach.async(async () => {
+        spyOn(TechTree, 'get').and.returnValue({
+          fishing: {
+            resources: {
+              research: {
+                wood: 10
+              },
+              upgrade: {
+                2: {wood: 30}
+              }
+            }
+          }
+        });
+
+        game = await Game.create({
+          users: ['abc123'],
+          uuid: gameUUID,
+          resources: {wood: 4, salmon: 3, catfish: 5},
+          tech: {fishing: {level: 1}}
+        });
+      });
+
+      it.async('rejects', async () => {
+        let err;
+        try { 
+          await subject.upgrade(gameUUID, {name: 'fishing'});
+        } catch (e) {
+          err = e; 
+        }
+        expect(err).toEqual('not enough resources');
+      });
+    });
+
+    describe('when both resources and levels are met', () => {
+      beforeEach.async(async () => {
+        spyOn(TechTree, 'get').and.returnValue({
+          fishing: {
+            resources: {
+              research: {
+                wood: 10
+              },
+              upgrade: {
+                2: {wood: 30}
+              }
+            }
+          }
+        });
+
+        game = await Game.create({
+          users: ['abc123'],
+          uuid: gameUUID,
+          resources: {wood: 36, salmon: 3, catfish: 5},
+          tech: {someOtherTech: {level: 4}, fishing: {level: 1}}
+        });
+      });
+      
+      it.async('upgrades the tech by 1 level', async () => {
+        const result = await subject.upgrade(gameUUID, {name: 'fishing'});
+        expect(result).toEqual(jasmine.objectContaining({
+          resources: jasmine.objectContaining({
+            wood: 6, salmon: 3, catfish: 5
+          }),
+          tech: jasmine.objectContaining({
+            someOtherTech: {level: 4},
+            fishing: {level: 2}
+          })
+        }));
       });
     });
   });

@@ -28,6 +28,7 @@ const GameSchema = mongoose.Schema({
     map: {},
     tech: {},
     resources: {
+      wood: numberType,
       catfish: { type: Number, default: 10, min: 0 },
     	salmon: numberType,
     },
