@@ -36,6 +36,16 @@ const Client = {
     await Actions.clearErrors();
     socket.emit('create-trip', formData);
   }
+
+  research: async (formData) => {
+    await Actions.clearErrors();
+    socket.emit('research', formData);
+  }
+
+  upgrade: async (formData) => {
+    await Actions.clearErrors();
+    socket.emit('upgrade', formData);
+  }
 };
 
 module.exports = Client;

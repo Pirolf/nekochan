@@ -1,6 +1,8 @@
 const GameLoop = require('./game_loop');
 const GameApi = require('./api/game_api');
+const TechApi = require('./api/tech_api');
 const User = require('./models/user');
+const camelCase = require('camelcase');
 
 let rooms = {};
 
@@ -8,10 +10,9 @@ function isAuthorized({id, token}) {
   return User.findOne({'facebook.id': id, 'facebook.token': token}).exec().then(() => Promise.resolve(true), () => Promise.resolve(false));
 }
 
-function socketEvent(name, socket, gameUUID) {
+function socketEvent({name, Api}, socket, gameUUID) {
   socket.on(name, (data) => {
-    const camelCase = require('camelcase');
-    const result = GameApi[camelCase(name)](gameUUID, data);
+    const result = Api[camelCase(name)](gameUUID, data);
     result.then((game) => {
       io.to(gameUUID).emit('gameUpdate', game);
     }, (err) => {
@@ -48,7 +49,8 @@ module.exports = function(server) {
 					});
 				}
         //game
-        ['assign-job', 'create-cats', 'create-trip'].forEach(f => socketEvent(f, socket, gameUUID));
+        ['assign-job', 'create-cats', 'create-trip'].forEach(name => socketEvent({name, Api: GameApi}, socket, gameUUID));
+        ['research', 'upgrade'].forEach(name => socketEvent({name, Api: TechApi}, socket, gameUUID));
       });
 		});
 
