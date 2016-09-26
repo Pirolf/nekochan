@@ -4,6 +4,8 @@ const uuid = require('uuid');
 const GameMap = require('../models/game_map');
 const MapConfig = require('../map_config');
 
+const TechTree = require('../tech_tree.js');
+
 function loadMap() {
   const toPairs = require('lodash.topairs');
   return toPairs(GameMap.get())
@@ -30,7 +32,10 @@ async function createGame(req, res) {
 
 async function getGame(req, res) {
   return Game.findOne({ 'uuid' : req.params.uuid }).exec()
-    .then(game => res.send(game), err => res.sendStatus(422));
+    .then(game => {
+      if (!game) return Promise.reject();
+      res.send({game, techTree: TechTree.get()});
+    }).catch(() => res.sendStatus(422));
 }
 
 module.exports = {

@@ -24,8 +24,9 @@ class Application extends React.Component {
 
 		const {routeName, pathParams} = getRoute();
 		if (routeName === 'game') {
-			const game = await Api.getGame({uuid: pathParams[1]});
-			Actions.updateGame(game);
+			const {game, techTree} = await Api.getGame({uuid: pathParams[1]});
+      Actions.updateGame(game);
+      Actions.updateTechTree(techTree);
 		}
 	}
 

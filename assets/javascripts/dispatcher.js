@@ -6,6 +6,10 @@ const Dispatcher = {
 	updateGame({data}) {
 		this.$store.merge({game: data});
 	},
+  
+  updateTechTree({data}) {
+    this.$store.merge({techTree: data});
+  },
 
 	updateActivityLogs({data: {timestamp, ...rest}}) {
 		const time = (new Date(timestamp)).toString();
