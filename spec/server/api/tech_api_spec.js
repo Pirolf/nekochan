@@ -1,17 +1,11 @@
 require('../../spec_helper');
 
 describe('TechApi', () => {
-  let subject, Game, game, gameUUID, mongoose, TechTree;
+  let subject, Game, game, gameUUID, TechTree;
   beforeEach.async(async () => {
     subject = require('../../../server/api/tech_api');
     Game = require('../../../server/models/game');
     TechTree = require('../../../server/tech_tree');
-    mongoose = require('mongoose');
-
-    mongoose.Promise = require('es6-promise').Promise;
-    await (new Promise((resolve, reject) => {
-      mongoose.connect('mongodb://localhost:28017/nekochan-test', resolve);
-    }));
 
     gameUUID = require('uuid').v4();
   });

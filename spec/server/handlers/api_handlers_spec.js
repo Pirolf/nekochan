@@ -2,15 +2,9 @@ require('../../spec_helper');
 
 describe('Api handlers', () => {
   const Handlers = require('../../../server/handlers/api_handlers');
-  const mongoose = require('mongoose');
   const uuid = require('uuid');
-  const {dbSetup, dbTeardown} = require('../support/db');
-  let Game;
+  let Game, mockRes;
 
-  dbSetup();
-  dbTeardown();
-
-  let mockRes;
   beforeEach(() => {
     Game = require('../../../server/models/game');
     mockRes = jasmine.createSpyObj('res', ['send', 'sendStatus']);

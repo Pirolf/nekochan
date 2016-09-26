@@ -6,24 +6,11 @@ describe('GameApi', () => {
   const IdleCat = require('../../../server/cats/idle_cat');
   const FisherCat = require('../../../server/cats/fisher_cat');
   const ExplorerCat = require('../../../server/cats/explorer_cat');
-  const mongoose = require('mongoose');
-
-  function timeout(t) {
-    return new Promise((resolve, reject) => {
-      setTimeout(resolve, t);
-    });
-  }
 
   describe('#assignJob', () => {
     const Game = require('../../../server/models/game');
     let gameUUID, game, saveSpy;
     beforeEach.async(async () => {
-      mongoose.Promise = require('es6-promise').Promise;
-      const setupDB = new Promise((resolve, reject) => {
-        mongoose.connect('mongodb://localhost:28017/nekochan-test', resolve);
-      });
-      await setupDB;
-
       gameUUID = require('uuid').v4();
       game = await Game.create({
         users: ['abc123'],
@@ -34,15 +21,6 @@ describe('GameApi', () => {
           fishercat: {count: 1}
         }
       });
-    });
-
-    afterEach.async(async () => {
-      mongoose.connection.db.dropDatabase();
-      const disconnect = new Promise((resolve, reject) => {
-        mongoose.disconnect(resolve);
-      });
-      await disconnect;
-      await timeout(1);
     });
 
     it.async('assigns the cats from old job to new job', async () => {
