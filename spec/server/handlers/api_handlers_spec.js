@@ -38,7 +38,6 @@ describe('Api handlers', () => {
     });
 
     it.async('creates a game and responds with uuid', async () => {
-      MockPromise.uninstall();
       await Handlers.createGame({user: {facebook: {id: 'some-fb-id'}}}, mockRes);
       expect(mockRes.send).toHaveBeenCalledWith({uuid: 'abc123'});
 
@@ -68,9 +67,11 @@ describe('Api handlers', () => {
     });
 
     it.async('returns 422 when game cannot be found', async () => {
-      MockPromise.uninstall();
       await Handlers.getGame({params: {uuid: 'non-existent'}}, mockRes);
       expect(mockRes.sendStatus).toHaveBeenCalledWith(422);
+    });
+
+    it.async('returns both game and techTree', () => {
     });
   });
 });

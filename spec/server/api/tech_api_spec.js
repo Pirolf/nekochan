@@ -3,7 +3,6 @@ require('../../spec_helper');
 describe('TechApi', () => {
   let subject, Game, game, gameUUID, mongoose, TechTree;
   beforeEach.async(async () => {
-    MockPromise.uninstall();
     subject = require('../../../server/api/tech_api');
     Game = require('../../../server/models/game');
     TechTree = require('../../../server/tech_tree');

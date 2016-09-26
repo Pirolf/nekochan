@@ -18,8 +18,6 @@ describe('GameApi', () => {
     const Game = require('../../../server/models/game');
     let gameUUID, game, saveSpy;
     beforeEach.async(async () => {
-      MockPromise.uninstall();
-
       mongoose.Promise = require('es6-promise').Promise;
       const setupDB = new Promise((resolve, reject) => {
         mongoose.connect('mongodb://localhost:28017/nekochan-test', resolve);
